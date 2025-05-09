@@ -1,10 +1,10 @@
 package com.wars.instruction;
 
 public class JTypeInstruction extends Instruction {
-    private final int opcode, iindex;
+    private final int iindex;
 
     public JTypeInstruction(int opcode, int iindex) {
-        this.opcode = opcode;
+        super(opcode);
         this.iindex = iindex;
     }
 

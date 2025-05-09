@@ -1,10 +1,10 @@
 package com.wars.instruction;
 
 public class ITypeInstruction extends Instruction {
-    private final int opcode, rs, rt, immediate;
+    private final int rs, rt, immediate;
 
     public ITypeInstruction(int opcode, int rs, int rt, int immediate) {
-        this.opcode = opcode;
+        super(opcode);
         this.rs = rs;
         this.rt = rt;
         this.immediate = immediate;
@@ -18,6 +18,7 @@ public class ITypeInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return String.format("I-Type: opc=%d, rs=%d, rt=%d, imm=%d", opcode, rs, rt, immediate);
+        return String.format("I-Type: opc=%d, rs=%d, rt=%d, imm=%d", opcode, rs,
+                rt, immediate);
     }
 }

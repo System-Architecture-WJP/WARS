@@ -2,14 +2,17 @@ package com.wars.instruction;
 
 import com.wars.constant.OperandType;
 import com.wars.exception.AssemblerException;
-import lombok.AllArgsConstructor;
 
 import java.util.List;
 
-@AllArgsConstructor
 public class InstructionDescriptor {
     private final List<OperandType> operandTypes;
     private final InstructionCreator creator;
+
+    public InstructionDescriptor(List<OperandType> operandTypes, InstructionCreator creator) {
+        this.operandTypes = operandTypes;
+        this.creator = creator;
+    }
 
     public Instruction create(int[] operands) {
         return creator.create(operands);

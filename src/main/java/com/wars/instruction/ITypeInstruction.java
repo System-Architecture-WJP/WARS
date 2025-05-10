@@ -18,7 +18,6 @@ public class ITypeInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return String.format("I-Type: opc=%d, rs=%d, rt=%d, imm=%d", opcode, rs,
-                rt, immediate);
+        return String.format("I-Type: opc=%d, rs=%d, rt=%d, imm=%d", opcode, rs, rt, immediate);
     }
 }

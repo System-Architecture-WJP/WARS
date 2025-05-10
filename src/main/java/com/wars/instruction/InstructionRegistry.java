@@ -33,6 +33,24 @@ public class InstructionRegistry {
         register("bgtz", InstructionRegistry::bgtz, List.of(REG5, IMM16));
 
         // Registering R-Type instructions
+        register("srl", InstructionRegistry::srl, List.of(REG5, REG5, REG5));
+        register("add", InstructionRegistry::add, List.of(REG5, REG5, REG5));
+        register("addu", InstructionRegistry::addu, List.of(REG5, REG5, REG5));
+        register("sub", InstructionRegistry::sub, List.of(REG5, REG5, REG5));
+        register("subu", InstructionRegistry::subu, List.of(REG5, REG5, REG5));
+        register("and", InstructionRegistry::and, List.of(REG5, REG5, REG5));
+        register("or", InstructionRegistry::or, List.of(REG5, REG5, REG5));
+        register("xor", InstructionRegistry::xor, List.of(REG5, REG5, REG5));
+        register("nor", InstructionRegistry::nor, List.of(REG5, REG5, REG5));
+        register("slt", InstructionRegistry::slt, List.of(REG5, REG5, REG5));
+        register("sltu", InstructionRegistry::sltu, List.of(REG5, REG5, REG5));
+        register("jr", InstructionRegistry::jr, List.of(REG5));
+        register("jalr", InstructionRegistry::jalr, List.of(REG5, REG5));
+        register("sysc", InstructionRegistry::sysc, List.of());
+        register("eret", InstructionRegistry::eret, List.of());
+        register("movg2s", InstructionRegistry::movg2s, List.of(REG5, REG5));
+        register("movs2g", InstructionRegistry::movs2g, List.of(REG5, REG5));
+
         // Registering J-Type instructions
     }
 
@@ -190,5 +208,195 @@ public class InstructionRegistry {
                 operands[0],
                 0b00000,
                 operands[1]);
+    }
+
+    private static Instruction srl(int[] operands) {
+        // srl rd rt sa
+        return new RTypeInstruction(
+                0b000000,
+                0b00000,
+                operands[1],
+                operands[0],
+                operands[2],
+                0b000010);
+    }
+
+    private static Instruction add(int[] operands) {
+        // add rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100000);
+    }
+
+    private static Instruction addu(int[] operands) {
+        // addu rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100001);
+    }
+
+    private static Instruction sub(int[] operands) {
+        // sub rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100010);
+    }
+
+    private static Instruction subu(int[] operands) {
+        // subu rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100011);
+    }
+
+    private static Instruction and(int[] operands) {
+        // and rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100100);
+    }
+
+
+    private static Instruction or(int[] operands) {
+        // or rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100101);
+    }
+
+
+    private static Instruction xor(int[] operands) {
+        // xor rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100110);
+    }
+
+
+    private static Instruction nor(int[] operands) {
+        // nor rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b100111);
+    }
+
+    private static Instruction slt(int[] operands) {
+        // slt rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b101010);
+    }
+
+    private static Instruction sltu(int[] operands) {
+        // sltu rd rs rt
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                operands[2],
+                operands[0],
+                0b00000,
+                0b101011);
+    }
+
+    private static Instruction jr(int[] operands) {
+        // jr rs
+        return new RTypeInstruction(
+                0b000000,
+                operands[0],
+                0b00000,
+                0b00000,
+                0b00000,
+                0b001000);
+    }
+
+    private static Instruction jalr(int[] operands) {
+        // jalr rd rs
+        return new RTypeInstruction(
+                0b000000,
+                operands[1],
+                0b00000,
+                operands[0],
+                0b00000,
+                0b001001);
+    }
+
+    private static Instruction sysc(int[] operands) {
+        // sysc
+        return new RTypeInstruction(
+                0b000000,
+                0b00000,
+                0b00000,
+                0b00000,
+                0b00000,
+                0b001100);
+    }
+
+    private static Instruction eret(int[] operands) {
+        // eret
+        return new RTypeInstruction(
+                0b010000,
+                0b10000,
+                0b00000,
+                0b00000,
+                0b00000,
+                0b011000);
+    }
+
+    private static Instruction movg2s(int[] operands) {
+        // movg2s rd rt
+        return new RTypeInstruction(
+                0b010000,
+                0b00100,
+                operands[1],
+                operands[0],
+                0b00000,
+                0b000000);
+    }
+
+    private static Instruction movs2g(int[] operands) {
+        // movs2g rd rt
+        return new RTypeInstruction(
+                0b010000,
+                0b00000,
+                operands[1],
+                operands[0],
+                0b00000,
+                0b000000);
     }
 }

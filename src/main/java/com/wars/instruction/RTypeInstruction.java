@@ -1,6 +1,6 @@
 package com.wars.instruction;
 
-public class RTypeInstruction extends Instruction {
+class RTypeInstruction extends Instruction {
     private final int rs, rt, rd, sa, fun;
 
     public RTypeInstruction(int opcode, int rs, int rt, int rd, int sa, int fun) {
@@ -20,7 +20,6 @@ public class RTypeInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return String.format(
-                "R-Type: opc=%d, rs=%d, rt=%d, rd=%d, sa=%d, fun=%d", opcode, rs, rt, rd, sa, fun);
+        return String.format("R-Type: opc=%d, rs=%d, rt=%d, rd=%d, sa=%d, fun=%d", opcode, rs, rt, rd, sa, fun);
     }
 }

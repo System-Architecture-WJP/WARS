@@ -1,7 +1,6 @@
 package com.wars;
 
 import com.wars.instruction.Instruction;
-import com.wars.instruction.InstructionDescriptor;
 import com.wars.instruction.InstructionRegistry;
 
 import java.util.Arrays;
@@ -13,6 +12,7 @@ public class App {
                 sw 0 1 0
                 addi 2 1 4
                 addi 4 3 -1
+                j 20
                 """;
 
         Arrays.stream(code.split("\\n")).forEach(App::extract);
@@ -25,9 +25,7 @@ public class App {
         String mnemonic = split[0];
         String[] operands = Arrays.copyOfRange(split, 1, split.length);
 
-        InstructionDescriptor desc = InstructionRegistry.get(mnemonic);
-        int[] parsedOperands = desc.parseOperands(operands);
-        Instruction instruction = desc.create(parsedOperands);
+        Instruction instruction = InstructionRegistry.create(mnemonic, operands);
         System.out.println(instruction.toBinaryString());
     }
 }

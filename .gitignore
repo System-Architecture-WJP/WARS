@@ -26,3 +26,9 @@ replay_pid*
 # IntelliJ IDEA
 .idea/
 target/
+
+# Eclipse stuff
+.classpath
+.project
+.settings/
+bin/

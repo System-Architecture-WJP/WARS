@@ -1,17 +1,19 @@
 package com.wars.instruction;
 
-import com.wars.constant.OperandType;
 import com.wars.exception.AssemblerException;
+import com.wars.operand.OperandParser;
+import com.wars.operand.OperandType;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.wars.constant.OperandType.IMM16;
-import static com.wars.constant.OperandType.REG5;
+import static com.wars.operand.OperandType.*;
 
 public class InstructionRegistry {
-    private static final Map<String, InstructionDescriptor> registry = new HashMap<>();
+
+    private record InstructionInfo(InstructionCreator creator, List<OperandType> operandTypes) {}
+    private static final Map<String, InstructionInfo> registry = new HashMap<>();
 
     static {
         // Registering I-Type instructions
@@ -52,18 +54,21 @@ public class InstructionRegistry {
         register("movs2g", InstructionRegistry::movs2g, List.of(REG5, REG5));
 
         // Registering J-Type instructions
+        register("j", InstructionRegistry::j, List.of(IINDEX26));
+        register("jal", InstructionRegistry::jal, List.of(IINDEX26));
     }
 
     private static void register(String mnemonic, InstructionCreator creator, List<OperandType> operandTypes) {
-        registry.put(mnemonic, new InstructionDescriptor(operandTypes, creator));
+        registry.put(mnemonic, new InstructionInfo(creator, operandTypes));
     }
 
-    public static InstructionDescriptor get(String mnemonic) {
-        InstructionDescriptor descriptor = registry.get(mnemonic);
+    public static Instruction create(String mnemonic, String[] operands) {
+        InstructionInfo descriptor = registry.get(mnemonic);
         if (descriptor == null) {
             throw new AssemblerException("Unknown instruction: " + mnemonic + "Possible instructions: " + registry.keySet());
         }
-        return descriptor;
+        int[] parsedOperands = OperandParser.parseAll(operands, descriptor.operandTypes());
+        return descriptor.creator().create(parsedOperands);
     }
 
     private static Instruction lw(int[] operands) {
@@ -276,7 +281,6 @@ public class InstructionRegistry {
                 0b100100);
     }
 
-
     private static Instruction or(int[] operands) {
         // or rd rs rt
         return new RTypeInstruction(
@@ -288,7 +292,6 @@ public class InstructionRegistry {
                 0b100101);
     }
 
-
     private static Instruction xor(int[] operands) {
         // xor rd rs rt
         return new RTypeInstruction(
@@ -299,7 +302,6 @@ public class InstructionRegistry {
                 0b00000,
                 0b100110);
     }
-
 
     private static Instruction nor(int[] operands) {
         // nor rd rs rt
@@ -398,5 +400,19 @@ public class InstructionRegistry {
                 operands[0],
                 0b00000,
                 0b000000);
+    }
+
+    private static Instruction j(int[] operands) {
+        // j iindex
+        return new JTypeInstruction(
+                0b000010,
+                operands[0]);
+    }
+
+    private static Instruction jal(int[] operands) {
+        // jal iindex
+        return new JTypeInstruction(
+                0b000011,
+                operands[0]);
     }
 }

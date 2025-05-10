@@ -1,6 +1,6 @@
 package com.wars.instruction;
 
-public class ITypeInstruction extends Instruction {
+class ITypeInstruction extends Instruction {
     private final int rs, rt, immediate;
 
     public ITypeInstruction(int opcode, int rs, int rt, int immediate) {

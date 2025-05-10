@@ -1,6 +1,7 @@
 package com.wars;
 
 import com.wars.instruction.Instruction;
+import com.wars.instruction.InstructionDescriptor;
 import com.wars.instruction.InstructionRegistry;
 
 import java.util.Arrays;
@@ -20,11 +21,13 @@ public class App {
     private static void extract(String line) {
         if (line.isBlank() || line.startsWith("#")) return;
 
-//        String[] split = line.split("\\s+");
-//        String mnemonic = split[0];
-//        String[] operands = Arrays.copyOfRange(split, 1, split.length);
-//
-//        Instruction inst = InstructionRegistry.create(mnemonic, operands);
-//        System.out.println(inst.toBinaryString());
+        String[] split = line.split("\\s+");
+        String mnemonic = split[0];
+        String[] operands = Arrays.copyOfRange(split, 1, split.length);
+
+        InstructionDescriptor desc = InstructionRegistry.get(mnemonic);
+        int[] parsedOperands = desc.parseOperands(operands);
+        Instruction instruction = desc.create(parsedOperands);
+        System.out.println(instruction.toBinaryString());
     }
 }

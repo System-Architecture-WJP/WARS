@@ -1,44 +1,51 @@
 package com.wars.instruction;
 
+import com.wars.constant.OperandType;
+import com.wars.exception.AssemblerException;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static com.wars.constant.OperandType.IMM16;
+import static com.wars.constant.OperandType.REG5;
+
 public class InstructionRegistry {
-    private static final Map<String, InstructionCreator> registry = new HashMap<>();
+    private static final Map<String, InstructionDescriptor> registry = new HashMap<>();
 
     static {
         // Registering I-Type instructions
-        register("lw", InstructionRegistry::lw);
-        register("sw", InstructionRegistry::sw);
-        register("addi", InstructionRegistry::addi);
-        register("addiu", InstructionRegistry::addiu);
-        register("slti", InstructionRegistry::slti);
-        register("sltiu", InstructionRegistry::sltiu);
-        register("andi", InstructionRegistry::andi);
-        register("ori", InstructionRegistry::ori);
-        register("xori", InstructionRegistry::xori);
-        register("lui", InstructionRegistry::lui);
-        register("bltz", InstructionRegistry::bltz);
-        register("bgez", InstructionRegistry::bgez);
-        register("beq", InstructionRegistry::beq);
-        register("bne", InstructionRegistry::bne);
-        register("blez", InstructionRegistry::blez);
-        register("bgtz", InstructionRegistry::bgtz);
+        register("lw", InstructionRegistry::lw, List.of(REG5, REG5, IMM16));
+        register("sw", InstructionRegistry::sw, List.of(REG5, REG5, IMM16));
+        register("addi", InstructionRegistry::addi, List.of(REG5, REG5, IMM16));
+        register("addiu", InstructionRegistry::addiu, List.of(REG5, REG5, IMM16));
+        register("slti", InstructionRegistry::slti, List.of(REG5, REG5, IMM16));
+        register("sltiu", InstructionRegistry::sltiu, List.of(REG5, REG5, IMM16));
+        register("andi", InstructionRegistry::andi, List.of(REG5, REG5, IMM16));
+        register("ori", InstructionRegistry::ori, List.of(REG5, REG5, IMM16));
+        register("xori", InstructionRegistry::xori, List.of(REG5, REG5, IMM16));
+        register("lui", InstructionRegistry::lui, List.of(REG5, IMM16));
+        register("bltz", InstructionRegistry::bltz, List.of(REG5, IMM16));
+        register("bgez", InstructionRegistry::bgez, List.of(REG5, IMM16));
+        register("beq", InstructionRegistry::beq, List.of(REG5, REG5, IMM16));
+        register("bne", InstructionRegistry::bne, List.of(REG5, REG5, IMM16));
+        register("blez", InstructionRegistry::blez, List.of(REG5, IMM16));
+        register("bgtz", InstructionRegistry::bgtz, List.of(REG5, IMM16));
 
         // Registering R-Type instructions
         // Registering J-Type instructions
     }
 
-    private static void register(String mnemonic, InstructionCreator creator) {
-        registry.put(mnemonic, creator);
+    private static void register(String mnemonic, InstructionCreator creator, List<OperandType> operandTypes) {
+        registry.put(mnemonic, new InstructionDescriptor(operandTypes, creator));
     }
 
-    public static Instruction create(String mnemonic, int[] operands) {
-        InstructionCreator creator = registry.get(mnemonic);
-        if (creator == null) {
-            throw new IllegalArgumentException("Unknown instruction: " + mnemonic);
+    public static InstructionDescriptor get(String mnemonic) {
+        InstructionDescriptor descriptor = registry.get(mnemonic);
+        if (descriptor == null) {
+            throw new AssemblerException("Unknown instruction: " + mnemonic + "Possible instructions: " + registry.keySet());
         }
-        return creator.create(operands);
+        return descriptor;
     }
 
     private static Instruction lw(int[] operands) {
@@ -184,30 +191,4 @@ public class InstructionRegistry {
                 0b00000,
                 operands[1]);
     }
-
-    private static int parseReg(String val, int bits) {
-        int number = Integer.parseUnsignedInt(val);
-        int max = (1 << bits) - 1;
-
-        if (number > max) {
-            throw new IllegalArgumentException("Register number " + val + " out of bounds for " + bits + "-bit unsigned field (0 to " + max + ")");
-        }
-
-        return number;
-    }
-
-
-    private static int parseImm(String val) {
-        int number = Integer.parseInt(val);
-
-        int min = -(1 << (16 - 1));
-        int max = (1 << (16 - 1)) - 1;
-
-        if (number < min || number > max) {
-            throw new IllegalArgumentException("Value " + val + " out of bounds for " + 16 + "-bit signed field (" + min + " to " + max + ")");
-        }
-
-        return number;
-    }
-
 }

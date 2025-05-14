@@ -158,7 +158,7 @@ public class InstructionRegistry {
                 0b001111,
                 0b000000,
                 operands[0],
-                operands[2]);
+                operands[1]);
     }
 
     private static Instruction bltz(int[] operands) {

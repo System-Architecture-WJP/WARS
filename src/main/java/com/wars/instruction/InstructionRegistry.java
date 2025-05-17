@@ -1,6 +1,7 @@
 package com.wars.instruction;
 
 import com.wars.exception.AssemblerException;
+import com.wars.label.LabelManager;
 import com.wars.operand.OperandParser;
 import com.wars.operand.OperandType;
 
@@ -58,12 +59,27 @@ public class InstructionRegistry {
         j();
         jal();
     }
+    
+    private static JTypeInstruction handleJType(String mnemonic, String[] operands, LabelManager labelManager) {
+        JTypeInstruction result = new JTypeInstruction(mnemonic.equals("j") ? 0b000010 : 0b000011, labelManager.getCurrAddress());
+        labelManager.resolve(operands[0], result);
+        return result;
+    }
 
-    public static Instruction create(String mnemonic, String[] operands) {
-        int[] ints = OperandParser.parseAll(operands, operandTypesMap.get(mnemonic));
+    public static Instruction create(String mnemonic, String[] operands, LabelManager labelManager) {
         if (!instructionCreatorMap.containsKey(mnemonic)) {
-            throw new AssemblerException("Unknown instruction: " + mnemonic + "Possible instructions: " + instructionCreatorMap.keySet());
+            throw new AssemblerException("Unknown instruction: " + mnemonic + " Possible instructions: " + instructionCreatorMap.keySet());
         }
+        int[] ints;
+        try {
+            ints = OperandParser.parseAll(operands, operandTypesMap.get(mnemonic));
+        } catch (NumberFormatException e) {
+            if (mnemonic.equals("j") || mnemonic.equals("jal")) {
+                return handleJType(mnemonic, operands, labelManager);
+            }
+            throw e;
+        }
+
         return instructionCreatorMap.get(mnemonic).create(ints);
     }
 

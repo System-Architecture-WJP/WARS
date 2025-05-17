@@ -8,6 +8,7 @@ public abstract class Instruction {
     }
 
     public abstract int encode();
+    public abstract boolean isResolved();
 
     // will be used in the future when simulator is implemented
     // sub classes will need to be abstracted

@@ -22,4 +22,9 @@ class RTypeInstruction extends Instruction {
     public String toString() {
         return String.format("R-Type: opc=%d, rs=%d, rt=%d, rd=%d, sa=%d, fun=%d", opcode, rs, rt, rd, sa, fun);
     }
+
+    @Override
+    public boolean isResolved() {
+        return true;
+    }
 }

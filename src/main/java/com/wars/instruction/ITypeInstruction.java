@@ -20,4 +20,9 @@ class ITypeInstruction extends Instruction {
     public String toString() {
         return String.format("I-Type: opc=%d, rs=%d, rt=%d, imm=%d", opcode, rs, rt, immediate);
     }
+
+    @Override
+    public boolean isResolved() {
+        return true;
+    }
 }

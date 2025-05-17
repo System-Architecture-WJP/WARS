@@ -12,407 +12,310 @@ import static com.wars.operand.OperandType.*;
 
 public class InstructionRegistry {
 
-    private record InstructionInfo(InstructionCreator creator, List<OperandType> operandTypes) {}
-    private static final Map<String, InstructionInfo> registry = new HashMap<>();
+    private static final Map<String, InstructionCreator> instructionCreatorMap = new HashMap<>();
+    private static final Map<String, List<OperandType>> operandTypesMap = new HashMap<>();
+    private static final Map<Integer, String> opcodeMap = new HashMap<>();
 
     static {
         // Registering I-Type instructions
-        register("lw", InstructionRegistry::lw, List.of(REG5, REG5, IMM16));
-        register("sw", InstructionRegistry::sw, List.of(REG5, REG5, IMM16));
-        register("addi", InstructionRegistry::addi, List.of(REG5, REG5, IMM16));
-        register("addiu", InstructionRegistry::addiu, List.of(REG5, REG5, IMM16));
-        register("slti", InstructionRegistry::slti, List.of(REG5, REG5, IMM16));
-        register("sltiu", InstructionRegistry::sltiu, List.of(REG5, REG5, IMM16));
-        register("andi", InstructionRegistry::andi, List.of(REG5, REG5, IMM16));
-        register("ori", InstructionRegistry::ori, List.of(REG5, REG5, IMM16));
-        register("xori", InstructionRegistry::xori, List.of(REG5, REG5, IMM16));
-        register("lui", InstructionRegistry::lui, List.of(REG5, IMM16));
-        register("bltz", InstructionRegistry::bltz, List.of(REG5, IMM16));
-        register("bgez", InstructionRegistry::bgez, List.of(REG5, IMM16));
-        register("beq", InstructionRegistry::beq, List.of(REG5, REG5, IMM16));
-        register("bne", InstructionRegistry::bne, List.of(REG5, REG5, IMM16));
-        register("blez", InstructionRegistry::blez, List.of(REG5, IMM16));
-        register("bgtz", InstructionRegistry::bgtz, List.of(REG5, IMM16));
+        lw();
+        sw();
+        addi();
+        addiu();
+        slti();
+        sltiu();
+        andi();
+        ori();
+        xori();
+        lui();
+        bltz();
+        bgez();
+        beq();
+        bne();
+        blez();
+        bgtz();
 
         // Registering R-Type instructions
-        register("srl", InstructionRegistry::srl, List.of(REG5, REG5, REG5));
-        register("add", InstructionRegistry::add, List.of(REG5, REG5, REG5));
-        register("addu", InstructionRegistry::addu, List.of(REG5, REG5, REG5));
-        register("sub", InstructionRegistry::sub, List.of(REG5, REG5, REG5));
-        register("subu", InstructionRegistry::subu, List.of(REG5, REG5, REG5));
-        register("and", InstructionRegistry::and, List.of(REG5, REG5, REG5));
-        register("or", InstructionRegistry::or, List.of(REG5, REG5, REG5));
-        register("xor", InstructionRegistry::xor, List.of(REG5, REG5, REG5));
-        register("nor", InstructionRegistry::nor, List.of(REG5, REG5, REG5));
-        register("slt", InstructionRegistry::slt, List.of(REG5, REG5, REG5));
-        register("sltu", InstructionRegistry::sltu, List.of(REG5, REG5, REG5));
-        register("jr", InstructionRegistry::jr, List.of(REG5));
-        register("jalr", InstructionRegistry::jalr, List.of(REG5, REG5));
-        register("sysc", InstructionRegistry::sysc, List.of());
-        register("eret", InstructionRegistry::eret, List.of());
-        register("movg2s", InstructionRegistry::movg2s, List.of(REG5, REG5));
-        register("movs2g", InstructionRegistry::movs2g, List.of(REG5, REG5));
+        srl();
+        add();
+        addu();
+        sub();
+        subu();
+        and();
+        or();
+        xor();
+        nor();
+        slt();
+        sltu();
+        jr();
+        jalr();
+        sysc();
+        eret();
+        movg2s();
+        movs2g();
 
         // Registering J-Type instructions
-        register("j", InstructionRegistry::j, List.of(IINDEX26));
-        register("jal", InstructionRegistry::jal, List.of(IINDEX26));
-    }
-
-    private static void register(String mnemonic, InstructionCreator creator, List<OperandType> operandTypes) {
-        registry.put(mnemonic, new InstructionInfo(creator, operandTypes));
+        j();
+        jal();
     }
 
     public static Instruction create(String mnemonic, String[] operands) {
-        InstructionInfo descriptor = registry.get(mnemonic);
-        if (descriptor == null) {
-            throw new AssemblerException("Unknown instruction: " + mnemonic + "Possible instructions: " + registry.keySet());
+        int[] ints = OperandParser.parseAll(operands, operandTypesMap.get(mnemonic));
+        if (!instructionCreatorMap.containsKey(mnemonic)) {
+            throw new AssemblerException("Unknown instruction: " + mnemonic + "Possible instructions: " + instructionCreatorMap.keySet());
         }
-        int[] parsedOperands = OperandParser.parseAll(operands, descriptor.operandTypes());
-        return descriptor.creator().create(parsedOperands);
+        return instructionCreatorMap.get(mnemonic).create(ints);
     }
 
-    private static Instruction lw(int[] operands) {
+    private static void register(String mnemonic, int opcode, List<OperandType> operandTypes, InstructionCreator creator) {
+        instructionCreatorMap.put(mnemonic, creator);
+        operandTypesMap.put(mnemonic, operandTypes);
+        opcodeMap.put(opcode, mnemonic);
+    }
+
+    private static void lw() {
         // lw rt rs imm
-        return new ITypeInstruction(
-                0b100011,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b100011;
+        register("lw", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction sw(int[] operands) {
+    private static void sw() {
         // sw rt rs imm
-        return new ITypeInstruction(
-                0b101011,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b101011;
+        register("sw", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction addi(int[] operands) {
+    private static void addi() {
         // addi rt rs imm
-        return new ITypeInstruction(
-                0b001000,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b001000;
+        register("addi", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction addiu(int[] operands) {
+    private static void addiu() {
         // addiu rt rs imm
-        return new ITypeInstruction(
-                0b001001,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b001001;
+        register("addiu", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction slti(int[] operands) {
+    private static void slti() {
         // slti rt rs imm
-        return new ITypeInstruction(
-                0b001010,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b001010;
+        register("slti", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction sltiu(int[] operands) {
+    private static void sltiu() {
         // sltiu rt rs imm
-        return new ITypeInstruction(
-                0b001011,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b001011;
+        register("sltiu", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction andi(int[] operands) {
+    private static void andi() {
         // andi rt rs imm
-        return new ITypeInstruction(
-                0b001100,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b001100;
+        register("andi", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction ori(int[] operands) {
+    private static void ori() {
         // ori rt rs imm
-        return new ITypeInstruction(
-                0b001101,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b001101;
+        register("ori", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction xori(int[] operands) {
+    private static void xori() {
         // xori rt rs imm
-        return new ITypeInstruction(
-                0b001110,
-                operands[1],
-                operands[0],
-                operands[2]);
+        int opcode = 0b001110;
+        register("xori", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
     }
 
-    private static Instruction lui(int[] operands) {
+    private static void lui() {
         // lui rt imm
-        return new ITypeInstruction(
-                0b001111,
-                0b000000,
-                operands[0],
-                operands[1]);
+        int opcode = 0b001111;
+        register("lui", opcode, List.of(REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, 0b000000, operands[0], operands[1]));
     }
 
-    private static Instruction bltz(int[] operands) {
+    private static void bltz() {
         // bltz rs imm
-        return new ITypeInstruction(
-                0b000001,
-                operands[0],
-                0b00000,
-                operands[1]);
+        int opcode = 0b000001;
+        register("bltz", opcode, List.of(REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]));
     }
 
-    private static Instruction bgez(int[] operands) {
+    private static void bgez() {
         // bgez rs imm
-        return new ITypeInstruction(
-                0b000001,
-                operands[0],
-                0b00001,
-                operands[1]);
+        int opcode = 0b000001;
+        register("bgez", opcode, List.of(REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00001, operands[1]));
     }
 
-    private static Instruction beq(int[] operands) {
+    private static void beq() {
         // beq rs rt imm
-        return new ITypeInstruction(
-                0b000000,
-                operands[0],
-                operands[1],
-                operands[2]);
+        int opcode = 0b000000;
+        register("beq", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]));
     }
 
-    private static Instruction bne(int[] operands) {
+    private static void bne() {
         // bne rs rt imm
-        return new ITypeInstruction(
-                0b000101,
-                operands[0],
-                operands[1],
-                operands[2]);
+        int opcode = 0b000101;
+        register("bne", opcode, List.of(REG5, REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]));
     }
 
-    private static Instruction blez(int[] operands) {
+    private static void blez() {
         // blez rs imm
-        return new ITypeInstruction(
-                0b000110,
-                operands[0],
-                0b00000,
-                operands[1]);
+        int opcode = 0b000110;
+        register("blez", opcode, List.of(REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]));
     }
 
-    private static Instruction bgtz(int[] operands) {
+    private static void bgtz() {
         // bgtz rs imm
-        return new ITypeInstruction(
-                0b000111,
-                operands[0],
-                0b00000,
-                operands[1]);
+        int opcode = 0b000111;
+        register("bgtz", opcode, List.of(REG5, IMM16),
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]));
     }
 
-    private static Instruction srl(int[] operands) {
+    private static void srl() {
         // srl rd rt sa
-        return new RTypeInstruction(
-                0b000000,
-                0b00000,
-                operands[1],
-                operands[0],
-                operands[2],
-                0b000010);
+        int opcode = 0b000000;
+        int fun = 0b000010;
+        register("srl", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, 0b00000, operands[1], operands[0], operands[2], fun));
     }
 
-    private static Instruction add(int[] operands) {
+    private static void add() {
         // add rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100000);
+        int opcode = 0b000000;
+        register("add", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100000));
     }
 
-    private static Instruction addu(int[] operands) {
+    private static void addu() {
         // addu rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100001);
+        int opcode = 0b000000;
+        register("addu", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100001));
     }
 
-    private static Instruction sub(int[] operands) {
+    private static void sub() {
         // sub rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100010);
+        int opcode = 0b000000;
+        register("sub", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100010));
     }
 
-    private static Instruction subu(int[] operands) {
+    private static void subu() {
         // subu rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100011);
+        int opcode = 0b000000;
+        register("subu", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100011));
     }
 
-    private static Instruction and(int[] operands) {
+    private static void and() {
         // and rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100100);
+        int opcode = 0b000000;
+        register("and", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100100));
     }
 
-    private static Instruction or(int[] operands) {
+    private static void or() {
         // or rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100101);
+        int opcode = 0b000000;
+        register("or", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100101));
     }
 
-    private static Instruction xor(int[] operands) {
+    private static void xor() {
         // xor rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100110);
+        int opcode = 0b000000;
+        register("xor", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100110));
     }
 
-    private static Instruction nor(int[] operands) {
+    private static void nor() {
         // nor rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b100111);
+        int opcode = 0b000000;
+        register("nor", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b100111));
     }
 
-    private static Instruction slt(int[] operands) {
+    private static void slt() {
         // slt rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b101010);
+        int opcode = 0b000000;
+        register("slt", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b101010));
     }
 
-    private static Instruction sltu(int[] operands) {
+    private static void sltu() {
         // sltu rd rs rt
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                operands[2],
-                operands[0],
-                0b00000,
-                0b101011);
+        int opcode = 0b000000;
+        register("sltu", opcode, List.of(REG5, REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, 0b101011));
     }
 
-    private static Instruction jr(int[] operands) {
+    private static void jr() {
         // jr rs
-        return new RTypeInstruction(
-                0b000000,
-                operands[0],
-                0b00000,
-                0b00000,
-                0b00000,
-                0b001000);
+        int opcode = 0b000000;
+        register("jr", opcode, List.of(REG5),
+                operands -> new RTypeInstruction(opcode, operands[0], 0b00000, 0b00000, 0b00000, 0b001000));
     }
 
-    private static Instruction jalr(int[] operands) {
+    private static void jalr() {
         // jalr rd rs
-        return new RTypeInstruction(
-                0b000000,
-                operands[1],
-                0b00000,
-                operands[0],
-                0b00000,
-                0b001001);
+        int opcode = 0b000000;
+        register("jalr", opcode, List.of(REG5, REG5),
+                operands -> new RTypeInstruction(opcode, operands[1], 0b00000, operands[0], 0b00000, 0b001001));
     }
 
-    private static Instruction sysc(int[] operands) {
+    private static void sysc() {
         // sysc
-        return new RTypeInstruction(
-                0b000000,
-                0b00000,
-                0b00000,
-                0b00000,
-                0b00000,
-                0b001100);
+        int opcode = 0b000000;
+        register("sysc", opcode, List.of(),
+                operands -> new RTypeInstruction(opcode, 0b00000, 0b00000, 0b00000, 0b00000, 0b001100));
     }
 
-    private static Instruction eret(int[] operands) {
+    private static void eret() {
         // eret
-        return new RTypeInstruction(
-                0b010000,
-                0b10000,
-                0b00000,
-                0b00000,
-                0b00000,
-                0b011000);
+        int opcode = 0b010000;
+        register("eret", opcode, List.of(),
+                operands -> new RTypeInstruction(opcode, 0b10000, 0b00000, 0b00000, 0b00000, 0b011000));
     }
 
-    private static Instruction movg2s(int[] operands) {
+    private static void movg2s() {
         // movg2s rd rt
-        return new RTypeInstruction(
-                0b010000,
-                0b00100,
-                operands[1],
-                operands[0],
-                0b00000,
-                0b000000);
+        int opcode = 0b010000;
+        register("movg2s", opcode, List.of(REG5, REG5),
+                operands -> new RTypeInstruction(opcode, 0b00100, operands[1], operands[0], 0b00000, 0b000000));
     }
 
-    private static Instruction movs2g(int[] operands) {
+    private static void movs2g() {
         // movs2g rd rt
-        return new RTypeInstruction(
-                0b010000,
-                0b00000,
-                operands[1],
-                operands[0],
-                0b00000,
-                0b000000);
+        int opcode = 0b010000;
+        register("movs2g", opcode, List.of(REG5, REG5),
+                operands -> new RTypeInstruction(opcode, 0b00000, operands[1], operands[0], 0b00000, 0b000000));
     }
 
-    private static Instruction j(int[] operands) {
+    private static void j() {
         // j iindex
-        return new JTypeInstruction(
-                0b000010,
-                operands[0]);
+        int opcode = 0b000010;
+        register("j", opcode, List.of(IINDEX26),
+                operands -> new JTypeInstruction(opcode, operands[0]));
     }
 
-    private static Instruction jal(int[] operands) {
+    private static void jal() {
         // jal iindex
-        return new JTypeInstruction(
-                0b000011,
-                operands[0]);
+        int opcode = 0b000011;
+        register("jal", opcode, List.of(IINDEX26),
+                operands -> new JTypeInstruction(opcode, operands[0]));
     }
 }

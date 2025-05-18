@@ -10,7 +10,7 @@ import com.wars.instruction.JTypeInstruction;
 
 public class LabelManager {
     private final Map<String, Label> labels = new HashMap<>();
-    private long currAddress = 0;
+    private long currAddress;
 
     public LabelManager(int startAddress) {
         currAddress = startAddress;
@@ -32,8 +32,7 @@ public class LabelManager {
 
     public void resolve(String label, JTypeInstruction instruction) {
         if (instruction.isResolved()) {
-            throw new AssemblerException(
-                    "Attempt to resolve resolved instruction");
+            throw new AssemblerException("Attempt to resolve resolved instruction");
         }
 
         Label l = labels.get(label);

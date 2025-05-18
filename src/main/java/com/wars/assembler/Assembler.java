@@ -3,8 +3,10 @@ package com.wars.assembler;
 import com.wars.exception.AssemblerException;
 import com.wars.instruction.Instruction;
 import com.wars.instruction.InstructionRegistry;
+import com.wars.instruction.JTypeInstruction;
 import com.wars.label.Label;
 import com.wars.label.LabelManager;
+import com.wars.operand.OperandParser;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,23 +21,24 @@ public class Assembler {
     private final Scanner inputScanner;
     private final OutputStream outputStream;
     private final LabelManager labelManager;
-    private final Queue<Instruction> instructions = new LinkedList<>();
-    private long currLine = 0;
+    private final Queue<Instruction> instructionsQueue;
+    private long currLine;
 
-    public Assembler(InputStream inputStream, OutputStream outputStream,
-            int startAddress) {
-        inputScanner = new Scanner(inputStream);
+    public Assembler(InputStream inputStream, OutputStream outputStream, long currLine) {
+        this.inputScanner = new Scanner(inputStream);
         this.outputStream = outputStream;
-        labelManager = new LabelManager(startAddress);
+        this.labelManager = new LabelManager(0);
+        this.instructionsQueue = new LinkedList<>();
+        this.currLine = currLine;
     }
 
     private void drainInstructionsToBinaryString(PrintStream outputPrintStream) {
-        while (!instructions.isEmpty()) {
-            Instruction i = instructions.peek();
+        while (!instructionsQueue.isEmpty()) {
+            Instruction i = instructionsQueue.peek();
             if (!i.isResolved()) {
                 break;
             }
-            instructions.remove();
+            instructionsQueue.remove();
             outputPrintStream.println(i.toBinaryString());
         }
     }
@@ -81,18 +84,35 @@ public class Assembler {
 
         String mnemonic = split[0];
         String[] operands = Arrays.copyOfRange(split, 1, split.length);
-        Instruction instruction = InstructionRegistry.create(mnemonic,
-                operands, labelManager);
+        Instruction instruction;
 
-        instructions.add(instruction);
-        labelManager.increaseAddress(1);
-        
+        if ((mnemonic.equals("j") || mnemonic.equals("jal"))
+                && isJumpLabeled(operands)) {
+            instruction = handleJType(mnemonic, operands);
+        } else {
+            var expectedOperandTypes = InstructionRegistry.getOperandTypes(mnemonic);
+            int[] parsedOperands = OperandParser.parseAll(operands, expectedOperandTypes);
+            instruction = InstructionRegistry.create(mnemonic, parsedOperands);
+        }
+
+        instructionsQueue.add(instruction);
+        labelManager.increaseAddress(4);
         return true;
     }
 
     private boolean handleMacro(String line) {
         // TODO: implement this function
         return true;
+    }
+
+    private JTypeInstruction handleJType(String mnemonic, String[] operands) {
+        JTypeInstruction result = new JTypeInstruction(mnemonic.equals("j") ? 0b000010 : 0b000011, labelManager.getCurrAddress());
+        labelManager.resolve(operands[0], result);
+        return result;
+    }
+
+    private boolean isJumpLabeled(String[] operands) {
+        return operands.length == 1 && Label.isValidName(operands[0]);
     }
 
 }

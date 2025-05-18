@@ -14,7 +14,7 @@ public class Label {
     
     private Label(String name) {
         this.name = name;
-        checkName();
+        assert isValidName(name);
     }
     
     public Label(String name, JTypeInstruction instruction) {
@@ -40,13 +40,13 @@ public class Label {
         address = currAddress;
         this.line = line;
         
-        instructions.forEach(i -> {i.resolve(address);});
+        instructions.forEach(i -> i.resolve(address));
         
         instructions = null;
     }
 
-    private void checkName() {
-        // TODO: check if the name is legal
+    public static boolean isValidName(String labelName) {
+        return labelName.matches("^_[a-z]+$");
     }
     
     public void addInstruction(JTypeInstruction instruction) {

@@ -59,28 +59,17 @@ public class InstructionRegistry {
         j();
         jal();
     }
-    
-    private static JTypeInstruction handleJType(String mnemonic, String[] operands, LabelManager labelManager) {
-        JTypeInstruction result = new JTypeInstruction(mnemonic.equals("j") ? 0b000010 : 0b000011, labelManager.getCurrAddress());
-        labelManager.resolve(operands[0], result);
-        return result;
-    }
 
-    public static Instruction create(String mnemonic, String[] operands, LabelManager labelManager) {
+    public static Instruction create(String mnemonic, int[] operands) {
         if (!instructionCreatorMap.containsKey(mnemonic)) {
             throw new AssemblerException("Unknown instruction: " + mnemonic + " Possible instructions: " + instructionCreatorMap.keySet());
         }
-        int[] ints;
-        try {
-            ints = OperandParser.parseAll(operands, operandTypesMap.get(mnemonic));
-        } catch (NumberFormatException e) {
-            if (mnemonic.equals("j") || mnemonic.equals("jal")) {
-                return handleJType(mnemonic, operands, labelManager);
-            }
-            throw e;
-        }
 
-        return instructionCreatorMap.get(mnemonic).create(ints);
+        return instructionCreatorMap.get(mnemonic).create(operands);
+    }
+
+    public static List<OperandType> getOperandTypes(String mnemonic) {
+        return operandTypesMap.get(mnemonic);
     }
 
     private static void register(String mnemonic, int opcode, List<OperandType> operandTypes, InstructionCreator creator) {

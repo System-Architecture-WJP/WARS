@@ -1,6 +1,7 @@
 package com.wars.instruction;
 
 import com.wars.exception.AssemblerException;
+import com.wars.label.LabelManager;
 import com.wars.operand.OperandParser;
 import com.wars.operand.OperandType;
 
@@ -59,12 +60,16 @@ public class InstructionRegistry {
         jal();
     }
 
-    public static Instruction create(String mnemonic, String[] operands) {
-        int[] ints = OperandParser.parseAll(operands, operandTypesMap.get(mnemonic));
+    public static Instruction create(String mnemonic, int[] operands) {
         if (!instructionCreatorMap.containsKey(mnemonic)) {
-            throw new AssemblerException("Unknown instruction: " + mnemonic + "Possible instructions: " + instructionCreatorMap.keySet());
+            throw new AssemblerException("Unknown instruction: " + mnemonic + " Possible instructions: " + instructionCreatorMap.keySet());
         }
-        return instructionCreatorMap.get(mnemonic).create(ints);
+
+        return instructionCreatorMap.get(mnemonic).create(operands);
+    }
+
+    public static List<OperandType> getOperandTypes(String mnemonic) {
+        return operandTypesMap.get(mnemonic);
     }
 
     private static void register(String mnemonic, int opcode, List<OperandType> operandTypes, InstructionCreator creator) {

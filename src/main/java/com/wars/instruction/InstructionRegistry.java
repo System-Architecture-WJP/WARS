@@ -9,6 +9,7 @@ import java.util.Map;
 public class InstructionRegistry {
 
     private static final Map<String, InstructionCreator> instructionCreatorMap = Initializer.initializeCreatorMap();
+    private static final Map<String, InstructionExecutor> instructionExecutorMap = Initializer.initializeExecutorMap();
     private static final Map<String, List<OperandType>> operandTypesMap = Initializer.initializeOperandTypesMap();
     private static final Map<Integer, String> opcodeMap = Initializer.initializeOpcodeMap();
 
@@ -18,6 +19,10 @@ public class InstructionRegistry {
         }
 
         return instructionCreatorMap.get(mnemonic).create(operands);
+    }
+
+    public static Instruction getExecutableInstruction(String mnemonic, int[] operands) {
+        return instructionExecutorMap.get(mnemonic).execute(operands);
     }
 
     public static List<OperandType> getOperandTypes(String mnemonic) {

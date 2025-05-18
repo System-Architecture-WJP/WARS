@@ -1,6 +1,7 @@
 package com.wars.instruction;
 
 import com.wars.operand.OperandType;
+import com.wars.simulator.Configuration;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import static com.wars.operand.OperandType.*;
 class Initializer {
 
     private static final Map<String, InstructionCreator> instructionCreatorMap = new HashMap<>();
+    private static final Map<String, InstructionExecutor> instructionExecutorMap = new HashMap<>();
     private static final Map<String, List<OperandType>> operandTypesMap = new HashMap<>();
     private static final Map<Integer, String> opcodeMap = new HashMap<>();
 
@@ -61,6 +63,10 @@ class Initializer {
         return instructionCreatorMap;
     }
 
+    static Map<String, InstructionExecutor> initializeExecutorMap() {
+        return instructionExecutorMap;
+    }
+
     static Map<String, List<OperandType>> initializeOperandTypesMap() {
         return operandTypesMap;
     }
@@ -68,6 +74,14 @@ class Initializer {
     static Map<Integer, String> initializeOpcodeMap() {
         return opcodeMap;
     }
+
+    private static void register(String mnemonic, int opcode, List<OperandType> operandTypes, InstructionCreator creator, InstructionExecutor executor) {
+        instructionCreatorMap.put(mnemonic, creator);
+        instructionExecutorMap.put(mnemonic, executor);
+        operandTypesMap.put(mnemonic, operandTypes);
+        opcodeMap.put(opcode, mnemonic);
+    }
+
 
     private static void register(String mnemonic, int opcode, List<OperandType> operandTypes, InstructionCreator creator) {
         instructionCreatorMap.put(mnemonic, creator);
@@ -79,7 +93,18 @@ class Initializer {
         // lw rt rs imm
         int opcode = 0b100011;
         register("lw", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0];
+                    int rt = operands[1];
+                    int imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration config) {
+                            // TODO
+                        }
+                    };
+                });
     }
 
     private static void sw() {

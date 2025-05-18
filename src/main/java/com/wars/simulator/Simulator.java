@@ -24,6 +24,17 @@ public class Simulator {
         }
     }
 
+    private static void simulateIType(Configuration configuration, int bin) {
+        int opcode = (bin >> 26);
+        int rs = (bin >>> 21);
+        int rt = (bin >>> 16);
+        int imm = bin & 0xFFFF;
+
+        String mnemonic = InstructionRegistry.getByOpcode(opcode);
+        int[] operands = {rs, rt, imm};
+        executeInstruction(configuration, mnemonic, operands);
+    }
+
     private static void simulateRType(Configuration configuration, int bin) {
         int opcode = (bin >> 26);
         int rs = (bin >>> 21);
@@ -31,23 +42,24 @@ public class Simulator {
         int rd = (bin >>> 11);
         int sa = (bin >>> 6);
         int fun = bin & 0x3F;
-        String byOpcode = InstructionRegistry.getByOpcode(opcode);
+
+        String mnemonic = InstructionRegistry.getByOpcode(opcode);
+        int[] operands = {rs, rt, rd, sa, fun};
+        executeInstruction(configuration, mnemonic, operands);
     }
 
     private static void simulateJType(Configuration configuration, int bin) {
         int opcode = (bin >> 26);
-        int rs = (bin >>> 21);
-        int rt = (bin >>> 16);
-        int imm = bin & 0xFFFF;
-        String byOpcode = InstructionRegistry.getByOpcode(opcode);
+        int iindex = bin & 0x03FFFFFF;
+
+        String mnemonic = InstructionRegistry.getByOpcode(opcode);
+        int[] operands = {iindex};
+        executeInstruction(configuration, mnemonic, operands);
     }
 
-    private static void simulateIType(Configuration configuration, int bin) {
-        int opcode = (bin >> 26);
-        int rs = (bin >>> 21);
-        int rt = (bin >>> 16);
-        int imm = bin & 0xFFFF;
-        String byOpcode = InstructionRegistry.getByOpcode(opcode);
+    private static void executeInstruction(Configuration configuration, String mnemonic, int[] operands) {
+        var instruction = InstructionRegistry.getExecutableInstruction(mnemonic, operands);
+        instruction.execute(configuration);
     }
 
 }

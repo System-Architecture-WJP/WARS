@@ -3,10 +3,10 @@ package com.wars.instruction;
 import com.wars.exception.AssemblerException;
 
 public class JTypeInstruction extends Instruction {
+    private final long address;
     private int iindex = -1;
     private boolean isResolved;
-    private final long address;
-    
+
     public JTypeInstruction(int opcode, long address) {
         super(opcode);
         isResolved = false;
@@ -28,17 +28,17 @@ public class JTypeInstruction extends Instruction {
         // opcode (6) | iindex (26)
         return (opcode << 26) | (iindex & 0x03FFFFFF);
     }
-    
+
     public boolean isResolved() {
         return isResolved;
     }
-        
+
     public void resolve(long labelAddress) {
         isResolved = true;
         // TODO: check that the difference fits in 26 bits
         this.iindex = (int) (labelAddress - address);
     }
-    
+
     @Override
     public String toString() {
         if (!isResolved) {

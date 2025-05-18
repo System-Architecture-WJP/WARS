@@ -1,5 +1,7 @@
 package com.wars.instruction;
 
+import com.wars.simulator.Configuration;
+
 public abstract class Instruction {
     protected final int opcode;
 
@@ -8,11 +10,12 @@ public abstract class Instruction {
     }
 
     public abstract int encode();
+
     public abstract boolean isResolved();
 
-    // will be used in the future when simulator is implemented
-    // sub classes will need to be abstracted
-    // public abstract void execute();
+    public void execute(Configuration config) {
+        throw new UnsupportedOperationException("Execute not implemented for this instruction");
+    }
 
     public String toBinaryString() {
         return String.format("%32s", Integer.toBinaryString(encode())).replace(' ', '0');

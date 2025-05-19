@@ -7,7 +7,7 @@ import com.wars.instruction.JTypeInstruction;
 import com.wars.label.Label;
 import com.wars.label.LabelManager;
 import com.wars.operand.OperandParser;
-import com.wars.operand.OperandType;
+import com.wars.macro.Macro;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -103,105 +103,10 @@ public class Assembler {
 
     private boolean handleMacro(String line) {
     
-        String[] split = line.split("[\\s(),]+");
-        if (split.length < 2) {
-            throw new AssemblerException("Invalid macro definition: " + line);
-        }
-        String macroType = split[1];
-        String [] mipsInstructions;
+        List<Instruction> instructions = Macro.evaluate(line); 
 
-        if (macroType.equals("gpr")){
-
-            if (split.length != 7) {
-                throw new AssemblerException("Invalid macro definition: " + line);
-            }
-
-            String reg = split[2];
-            String val = split[5];
-
-            mipsInstructions = new String[]{
-                "addi " + reg + " 0 " + val,
-            };
-
-        }
-        else if (macroType.equals("divt")){
-            
-            mipsInstructions = new String[]{
-                ""
-            };
-
-        }
-        else if (macroType.equals("divu")){
-            
-            mipsInstructions = new String[]{
-                ""
-            };
-
-
-        }
-        else if (macroType.equals("mul")){
-
-            if (split.length != 5) {
-                throw new AssemblerException("Invalid macro definition: " + line);
-            }
-
-            String k = split[2];
-            String i = split[3];
-            String j = split[4]; 
-
-            mipsInstructions = new String[]{
-                "addi 24 0 1",
-                "addi 26 " + i + " 0",
-                "addi 27 0 0",
-                "and 25 " + j + " 24",
-                "beq 25 0 2",
-                "add 27 27 26",
-                "add 24 24 24",
-                "add 26 26 26",
-                "bne 24 0 -5",
-                "addi " + k + " 27 0"
-            };
-         
-        }
-        else if (macroType.equals("zero")){
-            
-            if (split.length != 4) {
-                throw new AssemblerException("Invalid macro definition: " + line);
-            }
-
-            String i = split[2];
-            String j = split[3]; 
-
-            
-            mipsInstructions = new String[]{
-                "sw 0 " + i + " 0",
-                "addi " + i + " " + i + " 4",
-                "sw 0 " + j + " 0",
-                "bne 0 " + j + " -3"
-            };
-        
-        }
-        else {
-            throw new AssemblerException("Invalid macro type: " + macroType);
-        }
-
-        for (int i = 0; i < mipsInstructions.length; i++){
-                
-            String[] tokens = mipsInstructions[i].split("\\s+");
-            String mnemonic = tokens[0];
-
-            String[] operands = Arrays.copyOfRange(tokens, 1, tokens.length);
-
-            Instruction instruction;
-            
-            var expectedOperandTypes = InstructionRegistry.getOperandTypes(mnemonic);
-            int[] parsedOperands = OperandParser.parseAll(operands, expectedOperandTypes);
-            instruction = InstructionRegistry.create(mnemonic, parsedOperands);
-            
-            instructionsQueue.add(instruction);
-            labelManager.increaseAddress(4);
-        }
-
+        instructions.forEach(instructionsQueue::add);
+        labelManager.increaseAddress(4 * instructions.size());
         return true;
     }
 

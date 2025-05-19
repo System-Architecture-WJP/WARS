@@ -60,7 +60,6 @@ public class Simulator {
     private static void executeInstruction(Configuration configuration, String mnemonic, int[] operands) {
         var instruction = InstructionRegistry.getExecutableInstruction(mnemonic, operands);
         instruction.execute(configuration);
-        configuration.setPC(configuration.getPC() + 4);
     }
 
 }

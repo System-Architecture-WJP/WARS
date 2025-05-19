@@ -113,6 +113,7 @@ class Initializer {
 
                             int value = c.getWord(address);
                             c.setRegister(rt, value);
+                            c.setPC(c.getPC() + 4);
                         }
                     };
                 });
@@ -137,6 +138,7 @@ class Initializer {
 
                             int value = c.getRegister(rt);
                             c.setWord(address, value);
+                            c.setPC(c.getPC() + 4);
                         }
                     };
                 });
@@ -153,8 +155,10 @@ class Initializer {
                         @Override
                         public void execute(Configuration c) {
                             // rt = rs + sxt(imm)
-                            int result = c.getRegister(rs) + imm;
+                            int extendedImm = (imm << 16) >> 16;
+                            int result = c.getRegister(rs) + extendedImm;
                             c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
                         }
                     };
                 });
@@ -171,7 +175,10 @@ class Initializer {
                         @Override
                         public void execute(Configuration c) {
                             // rt = rs + sxt(imm)
-
+                            int signedImm = (short) imm; // Sign-extend 16-bit imm to 32-bit
+                            int result = c.getRegister(rs) + signedImm;
+                            c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
                         }
                     };
                 });
@@ -181,42 +188,122 @@ class Initializer {
         // slti rt rs imm
         int opcode = 0b001010;
         register("slti", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = (rs < sxt(imm)) ? 1 : 0
+                            int signedImm = (short) imm; // Sign-extend 16-bit imm
+                            int rsValue = c.getRegister(rs);
+                            int result = (rsValue < signedImm) ? 1 : 0;
+                            c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
+                        }
+                    };
+                });
     }
 
     private static void sltiu() {
         // sltiu rt rs imm
         int opcode = 0b001011;
         register("sltiu", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = (rs < imm) ? 1 : 0
+                            int rsVal = c.getRegister(rs);
+                            int immUnsigned = imm & 0xFFFF; // Zero-extend to 32 bits
+
+                            long rsUnsigned = Integer.toUnsignedLong(rsVal);
+                            long immUnsignedLong = immUnsigned; // already zero-extended
+
+                            int result = (rsUnsigned < immUnsignedLong) ? 1 : 0;
+                            c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
+                        }
+                    };
+                });
     }
 
     private static void andi() {
         // andi rt rs imm
         int opcode = 0b001100;
         register("andi", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = rs & imm
+                            int result = c.getRegister(rs) & imm;
+                            c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
+                        }
+                    };
+                });
     }
 
     private static void ori() {
         // ori rt rs imm
         int opcode = 0b001101;
         register("ori", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = rs | imm
+                            int result = c.getRegister(rs) | imm;
+                            c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
+                        }
+                    };
+                });
     }
 
     private static void xori() {
         // xori rt rs imm
         int opcode = 0b001110;
         register("xori", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = rs ^ imm
+                            int result = c.getRegister(rs) ^ imm;
+                            c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
+                        }
+                    };
+                });
     }
 
     private static void lui() {
         // lui rt imm
         int opcode = 0b001111;
         register("lui", opcode, List.of(REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, 0b000000, operands[0], operands[1]));
+                operands -> new ITypeInstruction(opcode, 0b000000, operands[0], operands[1]),
+                operands -> {
+                    int rt = operands[0], imm = operands[1];
+                    return new ITypeInstruction(opcode, 0b000000, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = imm0^16
+                            int result = (imm & 0xFFFF) << 16;
+                            c.setRegister(rt, result);
+                            c.setPC(c.getPC() + 4);
+                        }
+                    };
+                });
     }
 
     private static void bltz() {

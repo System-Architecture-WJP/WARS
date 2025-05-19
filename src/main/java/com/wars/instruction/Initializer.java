@@ -1,5 +1,6 @@
 package com.wars.instruction;
 
+import com.wars.exception.SimulatorException;
 import com.wars.operand.OperandType;
 import com.wars.simulator.Configuration;
 
@@ -75,7 +76,11 @@ class Initializer {
         return opcodeMap;
     }
 
-    private static void register(String mnemonic, int opcode, List<OperandType> operandTypes, InstructionCreator creator, InstructionExecutor executor) {
+    private static void register(String mnemonic,
+                                 int opcode,
+                                 List<OperandType> operandTypes,
+                                 InstructionCreator creator,
+                                 InstructionExecutor executor) {
         instructionCreatorMap.put(mnemonic, creator);
         instructionExecutorMap.put(mnemonic, executor);
         operandTypesMap.put(mnemonic, operandTypes);
@@ -95,13 +100,19 @@ class Initializer {
         register("lw", opcode, List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
-                    int rs = operands[0];
-                    int rt = operands[1];
-                    int imm = operands[2];
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
                     return new ITypeInstruction(opcode, rs, rt, imm) {
                         @Override
-                        public void execute(Configuration config) {
-                            // TODO
+                        public void execute(Configuration c) {
+                            // rt = m
+                            int address = c.getRegister(rs) + imm;
+
+                            if (address % 4 != 0) {
+                                throw new SimulatorException("Unaligned memory access at address: " + address);
+                            }
+
+                            int value = c.getWord(address);
+                            c.setRegister(rt, value);
                         }
                     };
                 });
@@ -111,21 +122,59 @@ class Initializer {
         // sw rt rs imm
         int opcode = 0b101011;
         register("sw", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // m = rt
+                            int address = c.getRegister(rs) + imm;
+
+                            if (address % 4 != 0) {
+                                throw new SimulatorException("Unaligned memory access at address: " + address);
+                            }
+
+                            int value = c.getRegister(rt);
+                            c.setWord(address, value);
+                        }
+                    };
+                });
     }
 
     private static void addi() {
         // addi rt rs imm
         int opcode = 0b001000;
         register("addi", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = rs + sxt(imm)
+                            int result = c.getRegister(rs) + imm;
+                            c.setRegister(rt, result);
+                        }
+                    };
+                });
     }
 
     private static void addiu() {
         // addiu rt rs imm
         int opcode = 0b001001;
         register("addiu", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // rt = rs + sxt(imm)
+
+                        }
+                    };
+                });
     }
 
     private static void slti() {

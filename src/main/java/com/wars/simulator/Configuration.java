@@ -3,8 +3,8 @@ package com.wars.simulator;
 
 public class Configuration {
     private int pc;
-    private int[] gpr;
-    private byte[] memory;
+    private final int[] gpr;
+    private final byte[] memory;
 
     public Configuration(int memorySize) {
         this.pc = 0;
@@ -12,11 +12,51 @@ public class Configuration {
         this.memory = new byte[memorySize];
     }
 
+    public int getPC() {
+        return pc;
+    }
+
+    public void setPC(int pc) {
+        this.pc = pc;
+    }
+
+    public int getRegister(int index) {
+        return gpr[index];
+    }
+
+    public void setRegister(int index, int value) {
+        if (index != 0) {
+            gpr[index] = value;
+        }
+    }
+
+    public byte getByte(int address) {
+        return memory[address];
+    }
+
+    public void setByte(int address, byte value) {
+        memory[address] = value;
+    }
+
+    public int getWord(int address) {
+        return ((memory[address] & 0xFF) << 24) |
+                ((memory[address + 1] & 0xFF) << 16) |
+                ((memory[address + 2] & 0xFF) << 8) |
+                (memory[address + 3] & 0xFF);
+    }
+
+    public void setWord(int address, int value) {
+        memory[address] = (byte) ((value >>> 24) & 0xFF);
+        memory[address + 1] = (byte) ((value >>> 16) & 0xFF);
+        memory[address + 2] = (byte) ((value >>> 8) & 0xFF);
+        memory[address + 3] = (byte) (value & 0xFF);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Configuration{");
-        sb.append("pc=").append(pc).append(", gpr={");
+        sb.append("pc=").append(pc).append(", gpr={" + "\n");
 
         for (int i = 0; i < gpr.length; i++) {
             sb.append("gpr ").append(i).append(" - ").append(gpr[i]);
@@ -26,6 +66,4 @@ public class Configuration {
         sb.append("}}");
         return sb.toString();
     }
-
-    //TODO helper methods for manipulation to come
 }

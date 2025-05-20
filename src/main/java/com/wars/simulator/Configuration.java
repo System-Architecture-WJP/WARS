@@ -2,21 +2,21 @@ package com.wars.simulator;
 
 
 public class Configuration {
-    private int pc;
+    private long pc;
     private final int[] gpr;
     private final byte[] memory;
 
     public Configuration(int memorySize) {
-        this.pc = 0;
+        this.pc = 0L;
         this.gpr = new int[32];
         this.memory = new byte[memorySize];
     }
 
-    public int getPC() {
+    public long getPC() {
         return pc;
     }
 
-    public void setPC(int pc) {
+    public void setPC(long pc) {
         this.pc = pc;
     }
 

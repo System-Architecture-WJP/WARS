@@ -155,8 +155,9 @@ class Initializer {
                         @Override
                         public void execute(Configuration c) {
                             // rt = rs + sxt(imm)
-                            int extendedImm = (imm << 16) >> 16;
+                            int extendedImm = (short) imm;
                             int result = c.getRegister(rs) + extendedImm;
+                            // TODO overflow check + test
                             c.setRegister(rt, result);
                             c.setPC(c.getPC() + 4);
                         }
@@ -175,7 +176,7 @@ class Initializer {
                         @Override
                         public void execute(Configuration c) {
                             // rt = rs + sxt(imm)
-                            int signedImm = (short) imm; // Sign-extend 16-bit imm to 32-bit
+                            int signedImm = (short) imm;
                             int result = c.getRegister(rs) + signedImm;
                             c.setRegister(rt, result);
                             c.setPC(c.getPC() + 4);
@@ -195,7 +196,7 @@ class Initializer {
                         @Override
                         public void execute(Configuration c) {
                             // rt = (rs < sxt(imm)) ? 1 : 0
-                            int signedImm = (short) imm; // Sign-extend 16-bit imm
+                            int signedImm = (short) imm;
                             int rsValue = c.getRegister(rs);
                             int result = (rsValue < signedImm) ? 1 : 0;
                             c.setRegister(rt, result);
@@ -218,11 +219,9 @@ class Initializer {
                             // rt = (rs < imm) ? 1 : 0
                             int rsVal = c.getRegister(rs);
                             int immUnsigned = imm & 0xFFFF; // Zero-extend to 32 bits
-
                             long rsUnsigned = Integer.toUnsignedLong(rsVal);
-                            long immUnsignedLong = immUnsigned; // already zero-extended
 
-                            int result = (rsUnsigned < immUnsignedLong) ? 1 : 0;
+                            int result = (rsUnsigned < (long) immUnsigned) ? 1 : 0;
                             c.setRegister(rt, result);
                             c.setPC(c.getPC() + 4);
                         }
@@ -310,42 +309,122 @@ class Initializer {
         // bltz rs imm
         int opcode = 0b000001;
         register("bltz", opcode, List.of(REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]));
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]),
+                operands -> {
+                    int rs = operands[0], imm = operands[1];
+                    return new ITypeInstruction(opcode, rs, 0b00000, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // pc = pc + (rs < 0 ? imm00 : 4)
+                            int rsVal = c.getRegister(rs);
+                            int signedImm = (short) imm;
+                            int offSet = rsVal < 0 ? (signedImm << 2) : 4;
+                            c.setPC(c.getPC() + offSet);
+                        }
+                    };
+                });
     }
 
     private static void bgez() {
         // bgez rs imm
         int opcode = 0b000001;
         register("bgez", opcode, List.of(REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[0], 0b00001, operands[1]));
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00001, operands[1]),
+                operands -> {
+                    int rs = operands[0], imm = operands[1];
+                    return new ITypeInstruction(opcode, rs, 0b00000, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // pc = pc + (rs >= 0 ? imm00 : 4)
+                            int rsVal = c.getRegister(rs);
+                            int signedImm = (short) imm;
+                            int offSet = rsVal >= 0 ? (signedImm << 2) : 4;
+                            c.setPC(c.getPC() + offSet);
+                        }
+                    };
+                });
     }
 
     private static void beq() {
         // beq rs rt imm
-        int opcode = 0b000000;
+        int opcode = 0b000100;
         register("beq", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // pc = pc + (rs = rt ? imm00 : 4)
+                            int rsVal = c.getRegister(rs);
+                            int rtVal = c.getRegister(rt);
+                            int signedImm = (short) imm;
+                            int offSet = rsVal == rtVal ? (signedImm << 2) : 4;
+                            c.setPC(c.getPC() + offSet);
+                        }
+                    };
+                });
     }
 
     private static void bne() {
         // bne rs rt imm
         int opcode = 0b000101;
         register("bne", opcode, List.of(REG5, REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]));
+                operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]),
+                operands -> {
+                    int rs = operands[0], rt = operands[1], imm = operands[2];
+                    return new ITypeInstruction(opcode, rs, rt, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // pc = pc + (rs != rt ? imm00 : 4)
+                            int rsVal = c.getRegister(rs);
+                            int rtVal = c.getRegister(rt);
+                            int signedImm = (short) imm;
+                            int offSet = rsVal != rtVal ? (signedImm << 2) : 4;
+                            c.setPC(c.getPC() + offSet);
+                        }
+                    };
+                });
     }
 
     private static void blez() {
         // blez rs imm
         int opcode = 0b000110;
         register("blez", opcode, List.of(REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]));
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]),
+                operands -> {
+                    int rs = operands[0], imm = operands[1];
+                    return new ITypeInstruction(opcode, rs, 0b00000, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // pc = pc + (rs <= 0 ? imm00 : 4)
+                            int rsVal = c.getRegister(rs);
+                            int signedImm = (short) imm;
+                            int offSet = rsVal <= 0 ? (signedImm << 2) : 4;
+                            c.setPC(c.getPC() + offSet);
+                        }
+                    };
+                });
     }
 
     private static void bgtz() {
         // bgtz rs imm
         int opcode = 0b000111;
         register("bgtz", opcode, List.of(REG5, IMM16),
-                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]));
+                operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]),
+                operands -> {
+                    int rs = operands[0], imm = operands[1];
+                    return new ITypeInstruction(opcode, rs, 0b00000, imm) {
+                        @Override
+                        public void execute(Configuration c) {
+                            // pc = pc + (rs > 0 ? imm00 : 4)
+                            int rsVal = c.getRegister(rs);
+                            int signedImm = (short) imm;
+                            int offSet = rsVal > 0 ? (signedImm << 2) : 4;
+                            c.setPC(c.getPC() + offSet);
+                        }
+                    };
+                });
     }
 
     private static void srl() {

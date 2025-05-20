@@ -551,4 +551,235 @@ class ConfigurationTest {
 
         assertEquals(0x80000000, config.getRegister(rt), "Should shift immediate without sign extension.");
     }
+
+    @Test
+    void test_bltz_branch_taken() {
+        int rs = 1;
+        int imm = 2; // branch offset (will be sign-extended)
+        config.setRegister(rs, -5);  // negative value, so branch taken
+        config.setPC(100);
+
+        Instruction bltz = InstructionRegistry.getExecutableInstruction("bltz", new int[]{rs, imm});
+        bltz.execute(config);
+
+        assertEquals(108, config.getPC());
+    }
+
+    @Test
+    void test_bltz_branch_taken_with_negative_offset() {
+        int rs = 1;
+        int imm = -2; // branch offset (will be sign-extended)
+        config.setRegister(rs, -5);  // negative value, so branch taken
+        config.setPC(100);
+
+        Instruction bltz = InstructionRegistry.getExecutableInstruction("bltz", new int[]{rs, imm});
+        bltz.execute(config);
+
+        assertEquals(92, config.getPC());
+    }
+
+    @Test
+    void test_bltz_branch_not_taken() {
+        int rs = 1;
+        int imm = 2;
+        config.setRegister(rs, 5);  // non-negative, branch not taken
+        config.setPC(100);
+
+        Instruction bltz = InstructionRegistry.getExecutableInstruction("bltz", new int[]{rs, imm});
+        bltz.execute(config);
+
+        // Expected PC: 100 + 4
+        assertEquals(104, config.getPC());
+    }
+
+    @Test
+    void test_bgez_branch_taken_greater() {
+        int rs = 1;
+        int imm = 2; // branch offset (will be sign-extended)
+        config.setRegister(rs, 10);
+        config.setPC(100);
+
+        Instruction bgez = InstructionRegistry.getExecutableInstruction("bgez", new int[]{rs, imm});
+        bgez.execute(config);
+
+        assertEquals(108, config.getPC());
+    }
+
+    @Test
+    void test_bgez_branch_taken_equals() {
+        int rs = 1;
+        int imm = 2; // branch offset (will be sign-extended)
+        config.setRegister(rs, 0);
+        config.setPC(100);
+
+        Instruction bltz = InstructionRegistry.getExecutableInstruction("bgez", new int[]{rs, imm});
+        bltz.execute(config);
+
+        assertEquals(108, config.getPC());
+    }
+
+    @Test
+    void test_bgez_branch_not_taken() {
+        int rs = 1;
+        int imm = 2;
+        config.setRegister(rs, -5);
+        config.setPC(100);
+
+        Instruction bltz = InstructionRegistry.getExecutableInstruction("bgez", new int[]{rs, imm});
+        bltz.execute(config);
+
+        // Expected PC: 100 + 4
+        assertEquals(104, config.getPC());
+    }
+
+    @Test
+    void test_beq_branch_taken() {
+        int rs = 1;
+        int rt = 2;
+        int imm = 3;
+
+        config.setPC(100);
+        config.setRegister(rs, 42);
+        config.setRegister(rt, 42); // rs == rt, branch taken
+
+        Instruction beq = InstructionRegistry.getExecutableInstruction("beq", new int[]{rs, rt, imm});
+        beq.execute(config);
+
+        int expectedPC = 100 + (imm << 2);
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_beq_branch_not_taken() {
+        int rs = 1;
+        int rt = 2;
+        int imm = 3;
+
+        config.setPC(100);
+        config.setRegister(rs, 42);
+        config.setRegister(rt, 50); // rs != rt, branch not taken
+
+        Instruction beq = InstructionRegistry.getExecutableInstruction("beq", new int[]{rs, rt, imm});
+        beq.execute(config);
+
+        int expectedPC = 100 + 4;
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_bne_branch_not_taken() {
+        int rs = 1;
+        int rt = 2;
+        int imm = 3;
+
+        config.setPC(100);
+        config.setRegister(rs, 42);
+        config.setRegister(rt, 42);
+
+        Instruction bne = InstructionRegistry.getExecutableInstruction("bne", new int[]{rs, rt, imm});
+        bne.execute(config);
+
+        int expectedPC = 100 + 4;
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_bne_branch_taken() {
+        int rs = 1;
+        int rt = 2;
+        int imm = 3;
+
+        config.setPC(100);
+        config.setRegister(rs, 42);
+        config.setRegister(rt, 50);
+
+        Instruction bne = InstructionRegistry.getExecutableInstruction("bne", new int[]{rs, rt, imm});
+        bne.execute(config);
+
+        int expectedPC = 100 + (imm << 2);
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_blez_branch_not_taken() {
+        int rs = 1;
+        int imm = 2; // branch offset (will be sign-extended)
+        config.setRegister(rs, 10);
+        config.setPC(100);
+
+        Instruction blez = InstructionRegistry.getExecutableInstruction("blez", new int[]{rs, imm});
+        blez.execute(config);
+
+        assertEquals(104, config.getPC());
+    }
+
+    @Test
+    void test_blez_branch_taken_equals_0() {
+        int rs = 1;
+        int imm = 2; // branch offset (will be sign-extended)
+        config.setRegister(rs, 0);
+        config.setPC(100);
+
+        Instruction blez = InstructionRegistry.getExecutableInstruction("blez", new int[]{rs, imm});
+        blez.execute(config);
+
+        int expectedPC = 100 + (imm << 2);
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_blez_branch_taken_less_than_0() {
+        int rs = 1;
+        int imm = 2;
+        config.setRegister(rs, -5);
+        config.setPC(100);
+
+        Instruction blez = InstructionRegistry.getExecutableInstruction("blez", new int[]{rs, imm});
+        blez.execute(config);
+
+        int expectedPC = 100 + (imm << 2);
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_bgtz_branch_taken() {
+        int rs = 1;
+        int imm = 2;
+        config.setRegister(rs, 10);
+        config.setPC(100);
+
+        Instruction bgtz = InstructionRegistry.getExecutableInstruction("bgtz", new int[]{rs, imm});
+        bgtz.execute(config);
+
+        int expectedPC = 100 + (imm << 2);
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_bgtz_branch_taken_with_negative_offset() {
+        int rs = 1;
+        int imm = -2;
+        config.setRegister(rs, 10);
+        config.setPC(100);
+
+        Instruction bgtz = InstructionRegistry.getExecutableInstruction("bgtz", new int[]{rs, imm});
+        bgtz.execute(config);
+
+        int expectedPC = 100 + (imm << 2);
+        assertEquals(expectedPC, config.getPC());
+    }
+
+    @Test
+    void test_bgtz_branch_not_taken() {
+        int rs = 1;
+        int imm = 2;
+        config.setRegister(rs, -10);
+        config.setPC(100);
+
+        Instruction bgtz = InstructionRegistry.getExecutableInstruction("bgtz", new int[]{rs, imm});
+        bgtz.execute(config);
+
+        int expectedPC = 100 + 4;
+        assertEquals(expectedPC, config.getPC());
+    }
 }

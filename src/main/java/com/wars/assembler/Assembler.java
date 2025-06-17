@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
 
+import com.wars.macro.Macro;
+
 public class Assembler {
     private final Scanner inputScanner;
     private final OutputStream outputStream;
@@ -117,8 +119,12 @@ public class Assembler {
     }
 
     private boolean handleMacro(String line) {
-        // TODO: implement this function
+        List<Instruction> instructions = Macro.evaluate(line); 
+        System.out.println(instructions.size());
+        instructions.forEach(instructionsQueue::add);
+        labelManager.increaseAddress(4 * instructions.size());
         return true;
+        
     }
 
     private JTypeInstruction handleJType(String mnemonic, String[] operands) {

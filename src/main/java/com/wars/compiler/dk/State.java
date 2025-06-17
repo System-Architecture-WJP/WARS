@@ -1,8 +1,8 @@
-package dk;
+package com.wars.compiler.dk;
 
-import grammar.Grammar;
-import grammar.Production;
-import grammar.Symbol;
+import com.wars.compiler.grammar.Grammar;
+import com.wars.compiler.grammar.Production;
+import com.wars.compiler.grammar.Symbol;
 
 import java.util.HashMap;
 import java.util.HashSet;

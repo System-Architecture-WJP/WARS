@@ -26,13 +26,13 @@ public class C0Program {
         this.HMAX = HMAX;
         this.code = code;
         this.mipsCode = mipsCode(code);
-        this.byteCode = byteCode();
+        this.byteCode = byteCode(this.mipsCode);
     }
 
     public C0Program(String code){
         this.code = code;
         this.mipsCode = mipsCode(code);
-        this.byteCode = byteCode();
+        this.byteCode = byteCode(this.mipsCode);
     }
 
     public C0Program(){}
@@ -47,8 +47,8 @@ public class C0Program {
         return CodeTranslation.C0Translation(adjustedCode, true);
     }
 
-    public String byteCode(){
-        String byteCode = "";
+    public String byteCode(String mipsCode){
+        String byteCode = CodeTranslation.MIPSTranslation(mipsCode);
 
         return byteCode;
     }

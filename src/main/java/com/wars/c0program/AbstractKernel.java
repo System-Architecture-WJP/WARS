@@ -46,14 +46,14 @@ public class AbstractKernel extends C0Program {
 
         this.code = code;
         this.mipsCode = mipsCode(code);
-        this.byteCode = byteCode();
+        this.byteCode = byteCode(this.mipsCode);
     }
 
     public AbstractKernel(){
         String code = generateKernel();
         this.code = code;
         this.mipsCode = mipsCode(code);
-        this.byteCode = byteCode();
+        this.byteCode = byteCode(this.mipsCode);
         
     }
 

@@ -25,7 +25,6 @@ public class Assembler {
     private final OutputStream outputStream;
     private final LabelManager labelManager;
     private final Queue<Instruction> instructionsQueue;
-    private final List<Integer> instructionBytecode;
     private long currLine;
 
     public Assembler(InputStream inputStream, OutputStream outputStream, long currLine) {
@@ -33,7 +32,15 @@ public class Assembler {
         this.outputStream = outputStream;
         this.labelManager = new LabelManager(0);
         this.instructionsQueue = new LinkedList<>();
-        this.instructionBytecode = new ArrayList<>();
+        this.currLine = currLine;
+    }
+
+    public Assembler(List<String> codeLines, long currLine) {
+        String joined = String.join("\n", codeLines);
+        this.inputScanner = new Scanner(joined);
+        this.outputStream = OutputStream.nullOutputStream();
+        this.labelManager = new LabelManager(0);
+        this.instructionsQueue = new LinkedList<>();
         this.currLine = currLine;
     }
 
@@ -44,21 +51,19 @@ public class Assembler {
                 break;
             }
             instructionsQueue.remove();
-            String binaryString = i.toBinaryString();
-
-            outputPrintStream.println(binaryString);
-            int bits = Integer.parseUnsignedInt(binaryString, 2);
-            instructionBytecode.add(bits);
+            outputPrintStream.println(i.toBinaryString());
         }
     }
 
-    public int[] getInstructionIntBytecode() {
-        if (instructionBytecode.isEmpty()) {
-            throw new AssemblerException("Needs to be assembled to binary string first.");
+    private void drainInstructionsToList(List<String> out) {
+        while (!instructionsQueue.isEmpty()) {
+            Instruction i = instructionsQueue.peek();
+            if (!i.isResolved()) {
+                break;
+            }
+            instructionsQueue.remove();
+            out.add(i.toBinaryString());
         }
-        return instructionBytecode.stream()
-                .mapToInt(Integer::intValue)
-                .toArray();
     }
     
     public void assembleToBinaryString() {
@@ -68,6 +73,16 @@ public class Assembler {
             drainInstructionsToBinaryString(outputPrintStream);
         }
         drainInstructionsToBinaryString(outputPrintStream);
+    }
+
+    public List<String> assembleToBinaryStringList() {
+        List<String> out = new ArrayList<>();
+
+        while (advance()) {
+            drainInstructionsToList(out);
+        }
+        drainInstructionsToList(out);
+        return out;
     }
 
     private boolean advance() {
@@ -120,7 +135,6 @@ public class Assembler {
 
     private boolean handleMacro(String line) {
         List<Instruction> instructions = Macro.evaluate(line); 
-        System.out.println(instructions.size());
         instructions.forEach(instructionsQueue::add);
         labelManager.increaseAddress(4 * instructions.size());
         return true;

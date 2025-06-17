@@ -7,10 +7,10 @@ import com.wars.compiler.grammar.Grammar;
 import static com.wars.compiler.util.Logger.log;
 
 public class GenerateAutomaton {
-    private static final String BINARYFILE = "compiler/src/main/java/dk/DK1.bin";
+    private static final String BINARYFILE = "src/main/java/com/wars/compiler/dk/DK1.bin";
     private static DK1 AUTOMATON;
-    private static final String TerminalsFile = "compiler/src/main/java/dk/DoNotTouchGrammar.txt";
-    private static final String GrammarFile = "compiler/src/main/java/dk/DoNotTouchTerminals.txt";
+    private static final String TerminalsFile = "src/main/java/com/wars/compiler/dk/DoNotTouchGrammar.txt";
+    private static final String GrammarFile = "src/main/java/com/wars/compiler/dk/DoNotTouchTerminals.txt";
 
     
     public static DK1 generateAutomaton(String grammarFilePath, String terminalFilePath, Grammar g){

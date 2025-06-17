@@ -26,7 +26,7 @@ public class OperandParser {
         };
     }
 
-    private static int parseUnsigned(String val, int bits) {
+    public static int parseUnsigned(String val, int bits) {
         int num = Integer.parseUnsignedInt(val);
         if (num < 0 || num >= (1 << bits)) {
             throw new AssemblerException("Register out of bounds: " + val);

@@ -1,4 +1,6 @@
 package com.wars.c0program;
+import javax.naming.ldap.SortKey;
+
 import com.wars.util.Initialize;
 
 
@@ -45,37 +47,40 @@ public class AbstractKernel extends C0Program {
         this.b = b;
 
         this.code = code;
-        this.mipsCode = mipsCode(code);
+        this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
     }
 
-    public AbstractKernel(){
-        String code = generateKernel();
+    public AbstractKernel(String code){
         this.code = code;
-        this.mipsCode = mipsCode(code);
+        this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
-        
     }
 
-     public String typedef(){
+    public static AbstractKernel generateAbstractKernel(){
+        String code = generateKernel(Initialize.K, Initialize.p, Initialize.PTLE, Initialize.PTASIZE, Initialize.nup, Initialize.SBASE, Initialize.SMAX, Initialize.HBASE, Initialize.HMAX, Initialize.HDBASE, Initialize.UPBASE, Initialize.SMSIZE, Initialize.SMUSERPAGE, Initialize.SMBASE, Initialize.a, Initialize.b);
+        return new AbstractKernel(code);
+    }
+
+     public static String typedef(int p, int PTASIZE, int nup){
         StringBuilder sb = new StringBuilder();
         sb.append("typedef uint' ptrunsigned; // pointer unsigned integer type\n");
         sb.append("typedef uint[32] u; // spr\n");
         sb.append("typedef uint[8] v; // gpr\n");
         sb.append("typedef struct {u GPR; v SPR} pcb; // gpr + spr\n");
-        sb.append("typedef pcb[" + (this.p + 1) + "] PCBt; // for p user and + abstract kernel (gpr + spr)\n");
+        sb.append("typedef pcb[" + (p + 1) + "] PCBt; // for p user and + abstract kernel (gpr + spr)\n");
         sb.append("\n");
-        sb.append("typedef uint[" + this.PTASIZE + "] PTAt; // page table entries array\n");
-        sb.append("typedef uint[" + (this.p + 1) + "] PTOIt; // page table origin array for p user and abstract kernel\n"); 
+        sb.append("typedef uint[" + PTASIZE + "] PTAt; // page table entries array\n");
+        sb.append("typedef uint[" + (p + 1) + "] PTOIt; // page table origin array for p user and abstract kernel\n"); 
         sb.append("\n");
         sb.append("typedef struct {uint usr; uint px} auxrec; // for a physical page it stores user which held this page and respective virtual page\n");
-        sb.append("typedef auxrec[" + this.nup + "] IPTt; // for every physical page, above\n");
+        sb.append("typedef auxrec[" + nup + "] IPTt; // for every physical page, above\n");
         sb.append("\n");
 
         return sb.toString();
     }
     
-    public String gm(){
+    public static String gm(){
         StringBuilder sb = new StringBuilder();
 
         sb.append("uint CP; // Current Process 0 - kernel, > 0 - user\n");
@@ -99,7 +104,7 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String computeIpf(){
+    public static String computeIpf(){
         StringBuilder sb = new StringBuilder();
 
         sb.append("\tIL = 0u;\n");
@@ -132,7 +137,7 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String scheduler(){
+    public static String scheduler(){
         StringBuilder sb = new StringBuilder();
         sb.append("void scheduler(){\n");
         sb.append("\n");
@@ -143,7 +148,7 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String swapIn(){
+    public static String swapIn(int UPBASE, int K, int SMBASE, int SMUSERPAGE){
         StringBuilder sb = new StringBuilder();
         sb.append("void swapIn(){\n");
         sb.append("\n");
@@ -151,11 +156,11 @@ public class AbstractKernel extends C0Program {
         sb.append("\t" + "uint SPAIN;" + " // swap page index to swap in \n");
         sb.append("\t" + "uint PTEIIN;" + " // pate table entry index to swap in \n");
         sb.append("\n");
-        sb.append("\t" + "PPXIN = " + this.UPBASE + "u / " + (this.K * 4) + "u + nextup;" + "\n");
-        sb.append("\t" + "SPAIN = " + this.SMBASE + "u + CP*" + (this.SMUSERPAGE) + "u + EVPX;" + "\n");
+        sb.append("\t" + "PPXIN = " + UPBASE + "u / " + (K * 4) + "u + nextup;" + "\n");
+        sb.append("\t" + "SPAIN = " + SMBASE + "u + CP*" + (SMUSERPAGE) + "u + EVPX;" + "\n");
         sb.append("\t" + "PTEIIN = PTOI[CP] + EVPX;" + "\n");
         sb.append("\t" + "readdisk(PPXIN, SPAIN);" + " // read page from disk \n");
-        sb.append("\t" + "PTA[PTEIIN] = PPXIN*" + (4 * this.K) + "u" + " + " + (2 * this.K) + "u;" + "\n");
+        sb.append("\t" + "PTA[PTEIIN] = PPXIN*" + (4 * K) + "u" + " + " + (2 * K) + "u;" + "\n");
         sb.append("\n");
         sb.append("\t" + "ipt[nextup].usr = CP;" + " // set user \n");
         sb.append("\t" + "ipt[nextup].px = EVPX" + " // set page index \n");
@@ -166,7 +171,7 @@ public class AbstractKernel extends C0Program {
     }
 
 
-    public String swapOut(){
+    public static String swapOut(int UPBASE, int SMBASE, int K, int SMUSERPAGE){
         StringBuilder sb = new StringBuilder();
         sb.append("void swapOut(){\n");
         sb.append("\n");
@@ -174,40 +179,40 @@ public class AbstractKernel extends C0Program {
         sb.append("\t" + "uint SPAOUT;" + " // swap page index to swap out \n");
         sb.append("\t" + "uint PTEIOUT;" + " // page table entry index to swap out \n");
         sb.append("\n");
-        sb.append("\t" + "PPXOUT = " + this.UPBASE + "u / " + (this.K * 4) + "u + nextup;" + "\n");
-        sb.append("\t" + "SPAOUT = " + this.SMBASE + "u + ipt[nextup].usr*" + this.SMUSERPAGE + "u + ipt[nextup].px;" + "\n");
+        sb.append("\t" + "PPXOUT = " + UPBASE + "u / " + (K * 4) + "u + nextup;" + "\n");
+        sb.append("\t" + "SPAOUT = " + SMBASE + "u + ipt[nextup].usr*" + SMUSERPAGE + "u + ipt[nextup].px;" + "\n");
         sb.append("\t" + "PTEIOUT = PTOI[ipt[nextup].usr] + ipt[nextup].px;" + "\n");
         sb.append("\n");
         sb.append("\t" + "writedisk(SPAOUT, PPXOUT);"  + " // write page to disk \n");
-        sb.append("\t" + "PTA[PTEIOUT] = PTA[PTEIOUT]-" + (2 * this.K) + "u" + "\n");
+        sb.append("\t" + "PTA[PTEIOUT] = PTA[PTEIOUT]-" + (2 * K) + "u" + "\n");
         sb.append("\n");
         sb.append("}; \n");
 
         return sb.toString();
     }
 
-    public String localVariables(){
+    public static String localVariables(){
         StringBuilder sb = new StringBuilder();
         sb.append("\t" + "uint i;" + "\n");
         return sb.toString();
     } 
 
-    public String initVariables(){
+    public static String initVariables(int K){
         StringBuilder sb = new StringBuilder();
         sb.append("\t" + "psfull = false;" + "\n");
         sb.append("\t" + "nextup = 0u;" + "\n");
         sb.append("\n");
         sb.append("\t" + "gpr(1) = PCB[0].GPR[0]&;" + " // init referernce on scratch memory \n");
-        sb.append("\t" + asm("sw 1 0 " + (4 * this.K)) + ";\n");
+        sb.append("\t" + asm("sw 1 0 " + (4 * K)) + ";\n");
 
         return sb.toString();
     }
 
 
-    public String initPTA(){
+    public static String initPTA(int PTASIZE){
         StringBuilder sb = new StringBuilder();
         sb.append("\t" + "i = 0u;" + "\n");
-        sb.append("\t" + "while i<" + (this.PTASIZE + 1) + "u {" + "\n");
+        sb.append("\t" + "while i<" + (PTASIZE + 1) + "u {" + "\n");
         sb.append("\t\t" + "PTA[i] = 0u;" + "\n");
         sb.append("\t\t" + "i = i + 1u" + "\n");
         sb.append("\t};\n");
@@ -215,12 +220,12 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String initPTOI(){
+    public static String initPTOI(int p, int PTLE){
         StringBuilder sb = new StringBuilder();
         sb.append("\t" + "i = 1u;" + "\n");
         sb.append("\t" + "PTOI[0] = 0u; // ignore for kernel" + "\n");
-        sb.append("\t" + "while i<" + (this.p + 1) + "u {" + "\n");
-        sb.append("\t\t" + "PTOI[i] = (i-1u)*" + this.PTLE + "u;" + "\n");
+        sb.append("\t" + "while i<" + (p + 1) + "u {" + "\n");
+        sb.append("\t\t" + "PTOI[i] = (i-1u)*" + PTLE + "u;" + "\n");
         sb.append("\t\t" + "i = i + 1u" + "\n");
         sb.append("\t};\n");
         sb.append("\n");
@@ -228,23 +233,23 @@ public class AbstractKernel extends C0Program {
 
     }
     
-    public String initSPR6(){
+    public static String initSPR6(int PTLE, int p){
         StringBuilder sb = new StringBuilder();
         sb.append("\t" + "i = 1u;" + "\n");
-        sb.append("\t" + "PCB[0].SPR[6] = " + this.PTLE + "u;" + " // ignore for kernel" + "\n");
-        sb.append("\t" + "while i<" + (this.p + 1)+ "u {" + "\n");
-        sb.append("\t\t" + "PCB[i].SPR[6] = " + this.PTLE + "u;" + "\n");
+        sb.append("\t" + "PCB[0].SPR[6] = " + PTLE + "u;" + " // ignore for kernel" + "\n");
+        sb.append("\t" + "while i<" + (p + 1)+ "u {" + "\n");
+        sb.append("\t\t" + "PCB[i].SPR[6] = " + PTLE + "u;" + "\n");
         sb.append("\t\t" + "i = i + 1u" + "\n");
         sb.append("\t};\n");
         sb.append("\n");
         return sb.toString();
     }
 
-    public String initSPR5(){
+    public static String initSPR5(int p){
         StringBuilder sb = new StringBuilder();
         sb.append("\t" + "i = 1u;" + "\n");
         sb.append("\t" + "PCB[0].SPR[5] = 0u;" + " // ignore for kernel" + "\n");
-        sb.append("\t" + "while i<" + (this.p + 1) + "u {" + "\n");
+        sb.append("\t" + "while i<" + (p + 1) + "u {" + "\n");
         sb.append("\t\t" + "gpr(1) = PTA[PTOI[i]]&;" + "\n");
         sb.append("\t\t" + "PCB[i].SPR[5] = gpr(1);" + "\n");
         sb.append("\t\t" + "i = i + 1u" + "\n");
@@ -253,7 +258,7 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String ipfHandler(){
+    public static String ipfHandler(int nup){
         StringBuilder sb = new StringBuilder();
         sb.append("void ipfHandler(){\n");
         sb.append("\n");
@@ -269,7 +274,7 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String runvm(){
+    public static String runvm(){
         StringBuilder sb = new StringBuilder();
         sb.append("int runvm(){\n");
         sb.append("\n");
@@ -289,16 +294,16 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String kernelMain(){
+    public static String kernelMain(int K, int p, int PTLE, int PTASIZE, int nup, int SBASE, int SMAX, int HBASE, int HMAX, int HDBASE, int UPBASE, int SMSIZE, int SMUSERPAGE, int SMBASE, int a, int b){
         StringBuilder sb = new StringBuilder();
         sb.append("int main(){" + "\n");
         sb.append("\n");
         sb.append(localVariables());
-        sb.append(initPTA());
-        sb.append(initPTOI());
-        sb.append(initSPR6());
-        sb.append(initSPR5());
-        sb.append(initVariables());
+        sb.append(initPTA(PTASIZE));
+        sb.append(initPTOI(p, PTLE));
+        sb.append(initSPR6(PTLE, p));
+        sb.append(initSPR5(p));
+        sb.append(initVariables(K));
         sb.append("\twhile true {" + "\n"); 
         sb.append("\t\tscheduler(); " + "\n");
         sb.append("\t\tWOV = runvm()" + "\n");
@@ -308,9 +313,9 @@ public class AbstractKernel extends C0Program {
         return sb.toString();
     }
 
-    public String generateKernel(){
+    public static String generateKernel(int K, int p, int PTLE, int PTASIZE, int nup, int SBASE, int SMAX, int HBASE, int HMAX, int HDBASE, int UPBASE, int SMSIZE, int SMUSERPAGE, int SMBASE, int a, int b){
         StringBuilder sb = new StringBuilder();
-        sb.append(typedef());
+        sb.append(typedef(p, PTASIZE, nup));
         sb.append("\n");
         sb.append(gm());
         sb.append("\n");
@@ -320,23 +325,48 @@ public class AbstractKernel extends C0Program {
         sb.append("\n");
         sb.append(Disk.copyms());
         sb.append("\n");
-        sb.append(Disk.readdisk(this.HDBASE, this.K));
+        sb.append(Disk.readdisk(HDBASE, K));
         sb.append("\n");
-        sb.append(Disk.writedisk(this.HDBASE, this.K));
+        sb.append(Disk.writedisk(HDBASE, K));
         sb.append("\n");
-        sb.append(swapIn());
+        sb.append(swapIn(UPBASE, K, SMBASE, SMUSERPAGE));
         sb.append("\n");
-        sb.append(swapOut());
+        sb.append(swapOut(UPBASE, SMBASE, K, SMUSERPAGE));
         sb.append("\n");
-        sb.append(ipfHandler());
+        sb.append(ipfHandler(nup));
         sb.append("\n");
         sb.append(scheduler());
         sb.append("\n");
         sb.append(runvm());
         sb.append("\n");
-        sb.append(kernelMain());
+        sb.append(kernelMain(K, p, PTLE, PTASIZE, nup, SBASE, SMAX, HBASE, HMAX, HDBASE, UPBASE, SMSIZE, SMUSERPAGE, SMBASE, a, b));
 
         return sb.toString();
 
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("------------C0 Program------------\n");
+        sb.append(this.code + "\n");
+        sb.append("------------MIPS Code------------\n");
+        sb.append(this.mipsCode + "\n");
+        sb.append("------------Byte Code------------\n");
+        sb.append(this.byteCode + "\n");
+
+        return sb.toString();
+    }
+
+    public String getMipsCode(){
+        return this.mipsCode;
+    }
+
+    public String getCode(){
+        return this.code;
+    }
+
+    public String getByteCode(){
+        return this.byteCode;
     }
 }

@@ -29,9 +29,9 @@ public class Simulator {
         int rs = (bin >>> 21);
         int rt = (bin >>> 16);
         int imm = bin & 0xFFFF;
+        int[] operands = {rs, rt, imm};
 
         String mnemonic = InstructionRegistry.getByOpcode(opcode);
-        int[] operands = {rs, rt, imm};
         executeInstruction(configuration, mnemonic, operands);
     }
 
@@ -42,18 +42,18 @@ public class Simulator {
         int rd = (bin >>> 11);
         int sa = (bin >>> 6);
         int fun = bin & 0x3F;
+        int[] operands = {rs, rt, rd, sa, fun};
 
         String mnemonic = InstructionRegistry.getByOpcode(opcode);
-        int[] operands = {rs, rt, rd, sa, fun};
         executeInstruction(configuration, mnemonic, operands);
     }
 
     private static void simulateJType(Configuration configuration, int bin) {
         int opcode = (bin >> 26);
         int iindex = bin & 0x03FFFFFF;
+        int[] operands = {iindex};
 
         String mnemonic = InstructionRegistry.getByOpcode(opcode);
-        int[] operands = {iindex};
         executeInstruction(configuration, mnemonic, operands);
     }
 

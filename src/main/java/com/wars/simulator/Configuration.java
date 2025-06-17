@@ -38,6 +38,12 @@ public class Configuration {
         memory[address] = value;
     }
 
+    public void setByteArray(byte[] arr, int startIndex){
+        for(int i = 0; i < arr.length; i++){
+            setByte(startIndex + i, arr[i]);
+        }
+    }
+
     public int getWord(int address) {
         return ((memory[address] & 0xFF) << 24) |
                 ((memory[address + 1] & 0xFF) << 16) |

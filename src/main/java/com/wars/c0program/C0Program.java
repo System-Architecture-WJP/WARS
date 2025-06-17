@@ -25,13 +25,13 @@ public class C0Program {
         this.HBASE = HBASE;
         this.HMAX = HMAX;
         this.code = code;
-        this.mipsCode = mipsCode(code);
+        this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
     }
 
     public C0Program(String code){
         this.code = code;
-        this.mipsCode = mipsCode(code);
+        this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
     }
 
@@ -76,6 +76,31 @@ public class C0Program {
 
     public static String asm(String s){
         return "asm( " + s + " )";
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("------------C0 Program------------\n");
+        sb.append(this.code + "\n");
+        sb.append("------------MIPS Code------------\n");
+        sb.append(this.mipsCode + "\n");
+        sb.append("------------Byte Code------------\n");
+        sb.append(this.byteCode + "\n");
+
+        return sb.toString();
+    }
+
+    public String getMipsCode(){
+        return this.mipsCode;
+    }
+
+    public String getCode(){
+        return this.code;
+    }
+
+    public String getByteCode(){
+        return this.byteCode;
     }
 
     

@@ -51,15 +51,19 @@ public class BootLoader extends C0Program {
         this.b = b;
 
         this.code = code;
-        this.mipsCode = mipsCode(code);
+        this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
     }
 
-    public BootLoader(){
-        String code = generateBootLoader();
+    public BootLoader(String code){
         this.code = code;
-        this.mipsCode = mipsCode(code);
+        this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
+    }
+
+    public static BootLoader generateBootLoader(){
+        String code = generateBootLoader(Initialize.K, Initialize.p, Initialize.PTLE, Initialize.PTASIZE, Initialize.nup, Initialize.SBASE, Initialize.SMAX, Initialize.HBASE, Initialize.HMAX, Initialize.HDBASE, Initialize.UPBASE, Initialize.SMSIZE, Initialize.SMUSERPAGE, Initialize.SMBASE, Initialize.a, Initialize.b);
+        return new BootLoader(code);
     }
 
     @Override
@@ -104,7 +108,7 @@ public class BootLoader extends C0Program {
         return sb.toString();
     }
     
-    public String bootLoaderMain(){
+    public static String bootLoaderMain(int a, int b, int K){
         StringBuilder sb = new StringBuilder();
         sb.append("int main(){" + "\n");
         sb.append("\n");
@@ -115,8 +119,8 @@ public class BootLoader extends C0Program {
         sb.append("\n");
 
         sb.append("\t" + "SPX = 0u;" + "\n");
-        sb.append("\t" + "PPX = " + this.a + "u;" + "\n");
-        sb.append("\t" + "L = " + (this.b - this.a + 4) / (4 * this.K) + ";" + "\n");
+        sb.append("\t" + "PPX = " + a + "u;" + "\n");
+        sb.append("\t" + "L = " + (b - a + 4) / (4 * K) + ";" + "\n");
         sb.append("\n");
 
         sb.append("\t" + "while L>0 {" + "\n");
@@ -132,7 +136,7 @@ public class BootLoader extends C0Program {
         return sb.toString();
     }
 
-    public String generateBootLoader(){
+    public static String generateBootLoader(int K, int p, int PTLE, int PTASIZE, int nup, int SBASE, int SMAX, int HBASE, int HMAX, int HDBASE, int UPBASE, int SMSIZE, int SMUSERPAGE, int SMBASE, int a, int b){
         StringBuilder sb = new StringBuilder();
         sb.append(Disk.readms());
         sb.append("\n");
@@ -140,12 +144,37 @@ public class BootLoader extends C0Program {
         sb.append("\n");
         sb.append(Disk.copyms());
         sb.append("\n");
-        sb.append(Disk.readdisk(this.HDBASE, this.K));
+        sb.append(Disk.readdisk(HDBASE, K));
         sb.append("\n");
-        sb.append(bootLoaderMain());
+        sb.append(bootLoaderMain(a, b, K));
         sb.append("~");
         sb.append("\n");
 
         return sb.toString();
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("------------C0 Program------------\n");
+        sb.append(this.code + "\n");
+        sb.append("------------MIPS Code------------\n");
+        sb.append(this.mipsCode + "\n");
+        sb.append("------------Byte Code------------\n");
+        sb.append(this.byteCode + "\n");
+
+        return sb.toString();
+    }
+
+    public String getMipsCode(){
+        return this.mipsCode;
+    }
+
+    public String getCode(){
+        return this.code;
+    }
+
+    public String getByteCode(){
+        return this.byteCode;
     }
 }

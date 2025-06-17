@@ -46,7 +46,7 @@ public class Label {
     }
 
     public static boolean isValidName(String labelName) {
-        return labelName.matches("^_[a-z]+$");
+        return labelName.matches("^_([a-z]|[A-Z])+$");
     }
     
     public void addInstruction(JTypeInstruction instruction) {

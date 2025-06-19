@@ -11,44 +11,36 @@ import com.wars.compiler.codegen.CodeGenerator;
 public class BootLoader extends C0Program {
 
     public int K = Initialize.K;
-    public int p = Initialize.p;
-    public int PTLE = Initialize.PTLE;
-    public int PTASIZE = Initialize.PTASIZE;
-    public int nup = Initialize.nup;
+    public int a = Initialize.ROMSTART;
+    public int b = Initialize.ROMEND;
+
+    public int HDBASE = Initialize.HDBASE;
+    
     public int SBASE = Initialize.SBASE;
     public int SMAX = Initialize.SMAX;
     public int HBASE = Initialize.HBASE;
     public int HMAX = Initialize.HMAX;
-    public int HDBASE = Initialize.HDBASE;
-    public int UPBASE = Initialize.UPBASE;
-    public int SMSIZE = Initialize.SMSIZE;
-    public int SMUSERPAGE = Initialize.SMUSERPAGE;
-    public int SMBASE = Initialize.SMBASE;
-    public int a = Initialize.a;
-    public int b = Initialize.b;
+
+    public int KernelStart = Initialize.a;
+    public int KernelEnd = Initialize.b;
 
     public String code;
     public String mipsCode;
     public String byteCode;
     
 
-    public BootLoader(int K, int p, int PTLE, int PTASIZE, int nup, int SBASE, int SMAX, int HBASE, int HMAX, int HDBASE, int UPBASE, int SMSIZE, int SMUSERPAGE, int SMBASE, int a, int b, String code) {
+    public BootLoader(int K, int a, int b,  int HDBASE, int SBASE, int SMAX, int HBASE, int HMAX, int KernelStart, String code) {
         this.K = K;
-        this.p = p;
-        this.PTLE = PTLE;
-        this.PTASIZE = PTASIZE;
-        this.nup = nup;
+        this.a = a;
+        this.b = b;
+        this.HDBASE = HDBASE;
+
         this.SBASE = SBASE;
         this.SMAX = SMAX;
         this.HBASE = HBASE;
         this.HMAX = HMAX;
-        this.HDBASE = HDBASE;
-        this.UPBASE = UPBASE;
-        this.SMSIZE = SMSIZE;
-        this.SMUSERPAGE = SMUSERPAGE;
-        this.SMBASE = SMBASE;
-        this.a = a;
-        this.b = b;
+
+        this.KernelStart = KernelStart;
 
         this.code = code;
         this.mipsCode = mipsCode(this.code);
@@ -62,7 +54,7 @@ public class BootLoader extends C0Program {
     }
 
     public static BootLoader generateBootLoader(){
-        String code = generateBootLoader(Initialize.K, Initialize.p, Initialize.PTLE, Initialize.PTASIZE, Initialize.nup, Initialize.SBASE, Initialize.SMAX, Initialize.HBASE, Initialize.HMAX, Initialize.HDBASE, Initialize.UPBASE, Initialize.SMSIZE, Initialize.SMUSERPAGE, Initialize.SMBASE, Initialize.a, Initialize.b);
+        String code = generateBootLoader(Initialize.K, Initialize.ROMSTART, Initialize.ROMEND, Initialize.HDBASE);
         return new BootLoader(code);
     }
 
@@ -84,10 +76,11 @@ public class BootLoader extends C0Program {
 
         int size = CodeGenerator.getInstance().totalProgramRealSize(true) - Context.removedStatementsForBootLoader;
         int beforeJumpToKernelSize = 4 * (Context.bootLoaderInit + size);
-        int relativeA = this.a - beforeJumpToKernelSize;
+        int relativeA = this.KernelStart - beforeJumpToKernelSize;
         int beforeJumptToGamma = beforeJumpToKernelSize + 4 * 2;
-        int gamainit = this.a - beforeJumptToGamma + 4 * Context.gammaAddress;
+        int gamainit = this.KernelEnd - beforeJumptToGamma + 4 * Context.gammaAddress;
         StringBuilder sb = new StringBuilder();
+
         sb.append("macro: ssave(1)" + "\n");
         sb.append("movs2g 2 1" + "\n");
         sb.append("andi 1 1 1" + "\n");
@@ -136,7 +129,7 @@ public class BootLoader extends C0Program {
         return sb.toString();
     }
 
-    public static String generateBootLoader(int K, int p, int PTLE, int PTASIZE, int nup, int SBASE, int SMAX, int HBASE, int HMAX, int HDBASE, int UPBASE, int SMSIZE, int SMUSERPAGE, int SMBASE, int a, int b){
+    public static String generateBootLoader(int K, int a, int b, int HDBASE){
         StringBuilder sb = new StringBuilder();
         sb.append(Disk.readms());
         sb.append("\n");

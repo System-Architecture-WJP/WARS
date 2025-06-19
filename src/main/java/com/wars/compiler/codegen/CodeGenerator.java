@@ -234,22 +234,32 @@ public class CodeGenerator {
 
             DTE fun = st.getFirstSon();
 
-            log("Void function call: " + fun.getBorderWord());
+            log("void function call: " + fun.getBorderWord());
             checkTokenType(fun, "<Na>");
 
             String functionName = fun.getBorderWord();
 
             Fun function = FunctionTable.getInstance().getFunction(functionName);
-            increaseVoidStackPointer(function.getSize());
+            List<Integer> registers = new LinkedList<>();
 
             if (fun.getNthBrother(2).isType("<PaS>")) {
                 log("found parameters: " + fun.getNthBrother(2).getBorderWord());
-                setParameters(function, fun.getNthBrother(2));
+                registers = getParametersRegisterList(function, fun.getNthBrother(2));
             }
-            if (function.getNumLocalVariables() != 0){
+
+            increaseVoidStackPointer(function.getSize());
+
+
+            if (fun.getNthBrother(2).isType("<PaS>")) {
+                log("found parameters: " + fun.getNthBrother(2).getBorderWord());
+                setParametersRegisterList(registers, function, fun.getNthBrother(2));
+            }
+
+            if (function.getNumLocalVariables() > 0){
                 initializeLocalVariables(function);
             }
-            addInstruction(Instruction.jal("_" + functionName));
+            
+            addInstruction(Instruction.jal("_" + functionName));            
 
             if (!functionInstructions.containsKey(functionName)) {
                 functionInstructions.put(functionName, new LinkedList<>());
@@ -292,7 +302,7 @@ public class CodeGenerator {
             throw new IllegalArgumentException("Register index - " + idx + " is reserved");
         }
 
-        if (id.getNthBrother(1) != null){
+        if (id.getSiblingCount() > 1){
             restrictedRegister = id.getNthBrother(2).getBorderWord();
         }
         
@@ -319,7 +329,7 @@ public class CodeGenerator {
         if (idx > 31){
             throw new IllegalArgumentException("Register Index - " + idx + " is out of bound");
         }
-        if (id.getNthBrother(6) != null){
+        if (id.getSiblingCount() > 6){
             restrictedRegister = content + "," + id.getNthBrother(7).getBorderWord();
         }
     
@@ -342,7 +352,9 @@ public class CodeGenerator {
         // E -> T -> F -> C -> DiS -> Di -> 1
         VarReg varRegId;
         VarReg varRegValue;
+        varRegId = evaluateId(id, true);
         
+        // case split for type of value
         if (value.isType("<Na>")){
             // id = Na() | id = Na(PaS) left
             // checkTokenType(value, "<Na>");
@@ -351,16 +363,21 @@ public class CodeGenerator {
             log("function call: " + functionName);
 
             Fun function = FunctionTable.getInstance().getFunction(functionName);
-            increaseStackPointer(function.getSize());
-
-            varRegId = evaluateId(id, true);
-            addInstruction(Instruction.sw(varRegId.register, SPT, -(function.getSize() + 4)));
-            Configuration.getInstance().freeRegister(varRegId.register);
-
+            List<Integer> registers = new LinkedList<>();
 
             if (value.getNthBrother(2).isType("<PaS>")) {
                 log("found parameters: " + value.getNthBrother(2).getBorderWord());
-                setParameters(function, value.getNthBrother(2));
+                registers = getParametersRegisterList(function, value.getNthBrother(2));
+            }
+
+            increaseStackPointer(function.getSize());
+
+            addInstruction(Instruction.sw(varRegId.register, SPT, -(function.getSize() + 4)));
+            Configuration.getInstance().freeRegister(varRegId.register);
+
+            if (value.getNthBrother(2).isType("<PaS>")) {
+                log("found parameters: " + value.getNthBrother(2).getBorderWord());
+                setParametersRegisterList(registers, function, value.getNthBrother(2));
             }
 
             if (function.getNumLocalVariables() > 0){
@@ -378,8 +395,7 @@ public class CodeGenerator {
 
             return;
         }
-        varRegId = evaluateId(id, true);
-        // case split for type of value
+
         if (value.isType("<E>")) {
             varRegValue = evaluateExpression(value);
         } else if (value.isType("<BE>")) {
@@ -426,7 +442,8 @@ public class CodeGenerator {
             System.out.println("addiu " + SPT + " " + BPT + " " + (function.getSize() + 8 + gmSize));
             System.out.println("subu 1 " + SPT + " " + BPT);
             System.out.println("srl 1 1 2");
-            System.out.println("macro: zero(" + BPT + ", 1)");
+            System.out.println("macro: zero(" + BPT + ", 1)");  
+            System.out.println("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)");
             System.out.println("j _" + headFunction);
             System.out.println();
         }
@@ -468,6 +485,7 @@ public class CodeGenerator {
             res.append("subu 1 " + SPT + " " + BPT + "\n");
             res.append("srl 1 1 2\n");
             res.append("macro: zero(" + BPT + ", 1)\n");
+            res.append("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
             res.append("j _" + headFunction + "\n\n");
         }
 
@@ -508,6 +526,7 @@ public class CodeGenerator {
             res.add("subu 1 " + SPT + " " + BPT + "\n");
             res.add("srl 1 1 2\n");
             res.add("macro: zero(" + BPT + ", 1)\n");
+            res.add("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
             res.add("j _" + headFunction + "\n");
         }
 
@@ -683,6 +702,70 @@ public class CodeGenerator {
             Configuration.getInstance().freeRegister(expr.register);
             index++;
         }
+    }
+
+    private void setParametersRegisterList(List<Integer> registers, Fun function, DTE paS) throws Exception {
+        checkTokenType(paS, "<PaS>");
+        List<Map.Entry<String, Variable>> params = function
+                .getMemoryStruct()
+                .getType()
+                .getStructComponentNamesSortedByDisplacement();
+//                .subList(0, function.getNumParameters());
+
+        int index = 0;
+        List<DTE> paSFlattened = paS.getFlattenedSequence();
+        if (paSFlattened.size() != function.getNumParameters()) {
+            throw new IllegalArgumentException("Incorrect number of params! expected: " + function.getNumParameters() + ", got: " + paSFlattened.size());
+        }
+        for (DTE pa : paSFlattened) {
+    
+            Variable parameter = params.get(index).getValue();
+            Integer reg = registers.get(index);
+            int imm = -function.getSize() + parameter.getDisplacement();
+            CodeGenerator.getInstance().addInstruction(Instruction.sw(reg, SPT, imm));
+            Configuration.getInstance().freeRegister(reg);
+            index++;
+        }
+    }
+
+
+    private List<Integer> getParametersRegisterList(Fun function, DTE paS) throws Exception {
+        checkTokenType(paS, "<PaS>");
+        List<Map.Entry<String, Variable>> params = function
+                .getMemoryStruct()
+                .getType()
+                .getStructComponentNamesSortedByDisplacement();
+//                .subList(0, function.getNumParameters());
+
+        int index = 0;
+        List<Integer> registers = new LinkedList<>();
+        List<DTE> paSFlattened = paS.getFlattenedSequence();
+        if (paSFlattened.size() != function.getNumParameters()) {
+            throw new IllegalArgumentException("Incorrect number of params! expected: " + function.getNumParameters() + ", got: " + paSFlattened.size());
+        }
+        for (DTE pa : paSFlattened) {
+            checkTokenType(pa, "<Pa>");
+            VarReg expr;
+            pa = pa.getFirstSon();
+            if (pa.isType("<E>")) {
+                expr = evaluateExpression(pa);
+            } else if (pa.isType("<BE>")) {
+                expr = evaluateBooleanExpression(pa);
+            } else if (pa.isType("<CC>")) {
+                expr = evaluateCharacterConstant(pa);
+            } else throw new IllegalArgumentException("Grammar error on " + paS.getBorderWord());
+
+            Variable parameter = params.get(index).getValue();
+
+            checkSameTypes(parameter.getType(), expr.type);
+
+            registers.add(expr.register);
+
+            int imm = -function.getSize() + parameter.getDisplacement();
+    
+            index++;
+        }
+        return registers;
     }
 
     public void initializeLocalVariables(Fun function) {

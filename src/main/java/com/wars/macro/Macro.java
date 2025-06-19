@@ -162,7 +162,7 @@ public class Macro {
         instructions.add(InstructionRegistry.create("sw",   new int[]{0, i, 0}));
         instructions.add(InstructionRegistry.create("addi", new int[]{i, i, 4}));
         instructions.add(InstructionRegistry.create("addi", new int[]{j, j, -1}));
-        instructions.add(InstructionRegistry.create("bne",  new int[]{0, j, -3}));
+        instructions.add(InstructionRegistry.create("bne",  new int[]{0, j, -3})); // j instead i
         
         return instructions;
     }
@@ -193,7 +193,7 @@ public class Macro {
 
         instructions.add(InstructionRegistry.create("add",  new int[]{k, 0, 0}));
         instructions.add(InstructionRegistry.create("sltu", new int[]{23, i, j}));
-        instructions.add(InstructionRegistry.create("bgtz", new int[]{23, 30}));
+        instructions.add(InstructionRegistry.create("bgtz", new int[]{23, 30})); // size increased, as number of instructions increases
         instructions.add(InstructionRegistry.create("add",  new int[]{23, i, 0}));
         instructions.add(InstructionRegistry.create("add",  new int[]{24, j, 0}));
         instructions.add(InstructionRegistry.create("addi", new int[]{25, 0, 1}));
@@ -202,7 +202,7 @@ public class Macro {
         store(21, "1" + "0".repeat(31)).forEach(instructions::add);
 
         instructions.add(InstructionRegistry.create("and",  new int[]{22, 24, 21}));
-        instructions.add(InstructionRegistry.create("bgtz", new int[]{22, 5}));
+        instructions.add(InstructionRegistry.create("bltz", new int[]{22, 5})); // gpr 22 stores, b[31]0^31, b[31] = 1 <-> gpr(22) < 0
         instructions.add(InstructionRegistry.create("add",  new int[]{25, 25, 25}));
         instructions.add(InstructionRegistry.create("add",  new int[]{24, 24, 24}));
         instructions.add(InstructionRegistry.create("sltu", new int[]{27, 23, 24}));
@@ -223,8 +223,8 @@ public class Macro {
         instructions.add(InstructionRegistry.create("bgtz", new int[]{27, -3}));
         instructions.add(InstructionRegistry.create("or",   new int[]{26, 26, 25}));
         instructions.add(InstructionRegistry.create("sub",  new int[]{23, 23, 24}));
-        instructions.add(InstructionRegistry.create("sltu", new int[]{27, 23, 24}));
-        instructions.add(InstructionRegistry.create("blez", new int[]{27, -23}));
+        instructions.add(InstructionRegistry.create("sltu", new int[]{22, 23, j})); // 22 instead of 27, otherwise won't finish B = A
+        instructions.add(InstructionRegistry.create("blez", new int[]{22, -23})); // size increased, as number of instructions increases
         instructions.add(InstructionRegistry.create("add",  new int[]{k, 26, 0}));
         
         return instructions;
@@ -243,12 +243,12 @@ public class Macro {
         instructions.add(InstructionRegistry.create("add",  new int[]{k, i, 0}));
         instructions.add(InstructionRegistry.create("beq",  new int[]{0, 0, 52}));
         
-        signAndAbs(21, i, i).forEach(instructions::add);
-        signAndAbs(22, j, j).forEach(instructions::add);
+        signAndAbs(21, 19, i).forEach(instructions::add); // avoid overwriting in i
+        signAndAbs(22, 18, j).forEach(instructions::add); // avoid overwriting in j
         
         instructions.add(InstructionRegistry.create("xor",  new int[]{20, 21, 22}));
 
-        divu(k, i, j).forEach(instructions::add);
+        divu(k, 19, 18).forEach(instructions::add);
 
         instructions.add(InstructionRegistry.create("blez", new int[]{20, 4}));
         instructions.add(InstructionRegistry.create("nor", new int[]{22, 0, 0}));

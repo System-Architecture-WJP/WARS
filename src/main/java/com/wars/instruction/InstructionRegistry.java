@@ -12,6 +12,7 @@ public class InstructionRegistry {
     private static final Map<String, InstructionExecutor> instructionExecutorMap = Initializer.initializeExecutorMap();
     private static final Map<String, List<OperandType>> operandTypesMap = Initializer.initializeOperandTypesMap();
     private static final Map<Integer, String> opcodeMap = Initializer.initializeOpcodeMap();
+    private static final Map<Integer, String> funMap = Initializer.initializeFunMap();
 
     public static Instruction create(String mnemonic, int[] operands) {
         if (!instructionCreatorMap.containsKey(mnemonic)) {
@@ -32,4 +33,13 @@ public class InstructionRegistry {
     public static String getByOpcode(int opcode) {
         return opcodeMap.get(opcode);
     }
+
+    public static String getInstruction(int opcode, int fun){
+        if (opcode != 0b000000 && opcode != 0b000001){
+            return opcodeMap.get(opcode);
+        }
+        return funMap.get(fun);
+    }
+
+    
 }

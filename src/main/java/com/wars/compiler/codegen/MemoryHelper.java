@@ -16,7 +16,7 @@ public class MemoryHelper {
                 Instruction.sysc(),
                 Instruction.addi(1, HPT, -size),
                 Instruction.addi(2, 0, size / 4),
-                "zero(1, 2)"
+                "macro: zero(1, 2)"
         ).forEach(CodeGenerator.getInstance()::addInstruction);
     }
 

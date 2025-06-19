@@ -35,6 +35,18 @@ public class C0Program {
         this.byteCode = byteCode(this.mipsCode);
     }
 
+    public C0Program(int SBASE, int SMAX, int HBASE, int HMAX, String code){
+        this.SBASE = SBASE;
+        this.SMAX = SMAX;
+        this.HBASE = HBASE;
+        this.HMAX = HMAX;
+
+        this.code = code;
+        this.mipsCode = mipsCode(this.code);
+        this.byteCode = byteCode(this.mipsCode);
+
+    }
+
     public C0Program(){}
 
     

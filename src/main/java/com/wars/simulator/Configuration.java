@@ -38,7 +38,7 @@ public class Configuration {
         memory[address] = value;
     }
 
-    public void setByteArray(byte[] arr, int startIndex){
+    public void setByteArray(byte[] arr, int startIndex) {
         for(int i = 0; i < arr.length; i++){
             setByte(startIndex + i, arr[i]);
         }
@@ -56,6 +56,10 @@ public class Configuration {
         memory[address + 1] = (byte) ((value >>> 16) & 0xFF);
         memory[address + 2] = (byte) ((value >>> 8) & 0xFF);
         memory[address + 3] = (byte) (value & 0xFF);
+    }
+
+    public byte[] getMemory(){
+        return this.memory;
     }
 
     @Override

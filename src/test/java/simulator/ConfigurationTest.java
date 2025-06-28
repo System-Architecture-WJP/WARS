@@ -15,7 +15,7 @@ class ConfigurationTest {
 
     @BeforeEach
     void setUp() {
-        config = new Configuration(1024); // Initialize with 1KB of memory
+        config = new Configuration();
     }
 
     @Test

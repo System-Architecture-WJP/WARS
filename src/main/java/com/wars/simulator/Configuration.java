@@ -1,15 +1,18 @@
 package com.wars.simulator;
 
 
-public class Configuration {
-    private long pc;
-    private final int[] gpr;
-    private final byte[] memory;
+import java.util.HashMap;
+import java.util.Map;
 
-    public Configuration(int memorySize) {
+public class Configuration {
+    private final int[] gpr;
+    private final Map<Integer, Byte> memory;
+    private long pc;
+
+    public Configuration() {
         this.pc = 0L;
         this.gpr = new int[32];
-        this.memory = new byte[memorySize];
+        this.memory = new HashMap<>();
     }
 
     public long getPC() {
@@ -31,25 +34,25 @@ public class Configuration {
     }
 
     public byte getByte(int address) {
-        return memory[address];
+        return memory.get(address);
     }
 
     public void setByte(int address, byte value) {
-        memory[address] = value;
+        memory.put(address, value);
     }
 
     public int getWord(int address) {
-        return ((memory[address] & 0xFF) << 24) |
-                ((memory[address + 1] & 0xFF) << 16) |
-                ((memory[address + 2] & 0xFF) << 8) |
-                (memory[address + 3] & 0xFF);
+        return ((memory.get(address) & 0xFF) << 24) |
+                ((memory.get(address + 1) & 0xFF) << 16) |
+                ((memory.get(address + 2) & 0xFF) << 8) |
+                (memory.get(address + 3) & 0xFF);
     }
 
     public void setWord(int address, int value) {
-        memory[address] = (byte) ((value >>> 24) & 0xFF);
-        memory[address + 1] = (byte) ((value >>> 16) & 0xFF);
-        memory[address + 2] = (byte) ((value >>> 8) & 0xFF);
-        memory[address + 3] = (byte) (value & 0xFF);
+        memory.put(address, (byte) ((value >>> 24) & 0xFF));
+        memory.put(address + 1, (byte) ((value >>> 16) & 0xFF));
+        memory.put(address + 2, (byte) ((value >>> 8) & 0xFF));
+        memory.put(address + 3, (byte) (value & 0xFF));
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.wars.instruction.InstructionRegistry;
 
 public class Simulator {
     public static Configuration simulate(int[] ints) {
-        var configuration = new Configuration(1024); // TODO how much memory???
+        var configuration = new Configuration();
 
         for (int bin : ints) {
             simulateStep(configuration, bin);

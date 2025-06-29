@@ -1,0 +1,14 @@
+readms:
+sw 31 29 -16
+addi 2 29 -8
+lw 2 2 0
+addi 1 2 0
+lw 2 1 0
+sw 2 29 -4
+addi 1 29 -4
+lw 1 1 0
+lw 2 29 -12
+sw 1 2 0
+lw 1 29 -16
+addi 29 29 -16
+jr 1

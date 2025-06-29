@@ -11,6 +11,7 @@ import com.wars.operand.OperandParser;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class Assembler {
     private final OutputStream outputStream;
     private final LabelManager labelManager;
     private final Queue<Instruction> instructionsQueue;
+    private final List<Integer> instructionBytecode;
     private long currLine;
 
     public Assembler(InputStream inputStream, OutputStream outputStream, long currLine) {
@@ -29,6 +31,7 @@ public class Assembler {
         this.outputStream = outputStream;
         this.labelManager = new LabelManager(0);
         this.instructionsQueue = new LinkedList<>();
+        this.instructionBytecode = new ArrayList<>();
         this.currLine = currLine;
     }
 
@@ -39,8 +42,21 @@ public class Assembler {
                 break;
             }
             instructionsQueue.remove();
-            outputPrintStream.println(i.toBinaryString());
+            String binaryString = i.toBinaryString();
+
+            outputPrintStream.println(binaryString);
+            long bits = Long.parseLong(binaryString, 2);
+            instructionBytecode.add((int) bits);
         }
+    }
+
+    public int[] getInstructionIntBytecode() {
+        if (instructionBytecode.isEmpty()) {
+            throw new AssemblerException("Needs to be assembled to binary string first.");
+        }
+        return instructionBytecode.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
     }
     
     public void assembleToBinaryString() {

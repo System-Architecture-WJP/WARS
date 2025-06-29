@@ -11,9 +11,8 @@ import java.util.Map;
 import static com.wars.operand.OperandType.*;
 
 class Initializer {
-
-    private static final Map<String, InstructionCreator> instructionCreatorMap = new HashMap<>();
-    private static final Map<String, InstructionExecutor> instructionExecutorMap = new HashMap<>();
+    private static final Map<String, InstructionCreator> encoderInstructionMap = new HashMap<>();
+    private static final Map<String, InstructionCreator> executableInstructionMap = new HashMap<>();
     private static final Map<String, List<OperandType>> operandTypesMap = new HashMap<>();
     private static final Map<Integer, String> opcodeMap = new HashMap<>();
 
@@ -60,12 +59,12 @@ class Initializer {
         jal();
     }
 
-    static Map<String, InstructionCreator> initializeCreatorMap() {
-        return instructionCreatorMap;
+    static Map<String, InstructionCreator> initializeEncoderMap() {
+        return encoderInstructionMap;
     }
 
-    static Map<String, InstructionExecutor> initializeExecutorMap() {
-        return instructionExecutorMap;
+    static Map<String, InstructionCreator> initializeExecutableMap() {
+        return executableInstructionMap;
     }
 
     static Map<String, List<OperandType>> initializeOperandTypesMap() {
@@ -79,17 +78,10 @@ class Initializer {
     private static void register(String mnemonic,
                                  int opcode,
                                  List<OperandType> operandTypes,
-                                 InstructionCreator creator,
-                                 InstructionExecutor executor) {
-        instructionCreatorMap.put(mnemonic, creator);
-        instructionExecutorMap.put(mnemonic, executor);
-        operandTypesMap.put(mnemonic, operandTypes);
-        opcodeMap.put(opcode, mnemonic);
-    }
-
-
-    private static void register(String mnemonic, int opcode, List<OperandType> operandTypes, InstructionCreator creator) {
-        instructionCreatorMap.put(mnemonic, creator);
+                                 InstructionCreator encoder,
+                                 InstructionCreator executor) {
+        encoderInstructionMap.put(mnemonic, encoder);
+        executableInstructionMap.put(mnemonic, executor);
         operandTypesMap.put(mnemonic, operandTypes);
         opcodeMap.put(opcode, mnemonic);
     }
@@ -332,7 +324,7 @@ class Initializer {
                 operands -> new ITypeInstruction(opcode, operands[0], 0b00001, operands[1]),
                 operands -> {
                     int rs = operands[0], imm = operands[1];
-                    return new ITypeInstruction(opcode, rs, 0b00000, imm) {
+                    return new ITypeInstruction(opcode, rs, 0b00001, imm) {
                         @Override
                         public void execute(Configuration c) {
                             // pc = pc + (rs >= 0 ? imm00 : 4)

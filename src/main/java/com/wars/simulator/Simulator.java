@@ -43,7 +43,7 @@ public class Simulator {
         int imm = instructionWord & 0xFFFF;
         int[] operands = {rs, rt, imm};
 
-        String mnemonic = InstructionRegistry.getByOpcode(opcode);
+        String mnemonic = InstructionRegistry.getMnemonicByOpcode(opcode);
         executeInstruction(configuration, mnemonic, operands);
     }
 
@@ -56,7 +56,7 @@ public class Simulator {
         int fun = instructionWord & 0x3F;
         int[] operands = {rs, rt, rd, sa, fun};
 
-        String mnemonic = InstructionRegistry.getByOpcode(opcode);
+        String mnemonic = InstructionRegistry.getMnemonicByOpcode(opcode);
         executeInstruction(configuration, mnemonic, operands);
     }
 
@@ -65,12 +65,12 @@ public class Simulator {
         int iindex = instructionWord & 0x03FFFFFF;
         int[] operands = {iindex};
 
-        String mnemonic = InstructionRegistry.getByOpcode(opcode);
+        String mnemonic = InstructionRegistry.getMnemonicByOpcode(opcode);
         executeInstruction(configuration, mnemonic, operands);
     }
 
     private static void executeInstruction(Configuration configuration, String mnemonic, int[] operands) {
-        var instruction = InstructionRegistry.getExecutableInstruction(mnemonic, operands);
+        var instruction = InstructionRegistry.create(mnemonic, operands);
         instruction.execute(configuration);
     }
 

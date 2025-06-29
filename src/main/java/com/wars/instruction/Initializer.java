@@ -14,10 +14,14 @@ class Initializer {
     private static final Map<String, InstructionCreator> encoderInstructionMap = new HashMap<>();
     private static final Map<String, InstructionCreator> executableInstructionMap = new HashMap<>();
     private static final Map<String, List<OperandType>> operandTypesMap = new HashMap<>();
-    private static final Map<Integer, String> opcodeMap = new HashMap<>();
 
     static {
-        // Registering I-Type instructions
+        registerITypeInstructions();
+        registerRTypeInstruction();
+        registerJTypeInstruction();
+    }
+
+    private static void registerITypeInstructions() {
         lw();
         sw();
         addi();
@@ -34,8 +38,9 @@ class Initializer {
         bne();
         blez();
         bgtz();
+    }
 
-        // Registering R-Type instructions
+    private static void registerRTypeInstruction() {
         srl();
         add();
         addu();
@@ -53,8 +58,9 @@ class Initializer {
         eret();
         movg2s();
         movs2g();
+    }
 
-        // Registering J-Type instructions
+    private static void registerJTypeInstruction() {
         j();
         jal();
     }
@@ -71,25 +77,19 @@ class Initializer {
         return operandTypesMap;
     }
 
-    static Map<Integer, String> initializeOpcodeMap() {
-        return opcodeMap;
-    }
-
     private static void register(String mnemonic,
-                                 int opcode,
                                  List<OperandType> operandTypes,
                                  InstructionCreator encoder,
                                  InstructionCreator executor) {
         encoderInstructionMap.put(mnemonic, encoder);
         executableInstructionMap.put(mnemonic, executor);
         operandTypesMap.put(mnemonic, operandTypes);
-        opcodeMap.put(opcode, mnemonic);
     }
 
     private static void lw() {
         // lw rt rs imm
         int opcode = 0b100011;
-        register("lw", opcode, List.of(REG5, REG5, IMM16),
+        register("lw", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -114,7 +114,7 @@ class Initializer {
     private static void sw() {
         // sw rt rs imm
         int opcode = 0b101011;
-        register("sw", opcode, List.of(REG5, REG5, IMM16),
+        register("sw", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -139,7 +139,7 @@ class Initializer {
     private static void addi() {
         // addi rt rs imm
         int opcode = 0b001000;
-        register("addi", opcode, List.of(REG5, REG5, IMM16),
+        register("addi", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -160,7 +160,7 @@ class Initializer {
     private static void addiu() {
         // addiu rt rs imm
         int opcode = 0b001001;
-        register("addiu", opcode, List.of(REG5, REG5, IMM16),
+        register("addiu", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -180,7 +180,7 @@ class Initializer {
     private static void slti() {
         // slti rt rs imm
         int opcode = 0b001010;
-        register("slti", opcode, List.of(REG5, REG5, IMM16),
+        register("slti", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -201,7 +201,7 @@ class Initializer {
     private static void sltiu() {
         // sltiu rt rs imm
         int opcode = 0b001011;
-        register("sltiu", opcode, List.of(REG5, REG5, IMM16),
+        register("sltiu", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -224,7 +224,7 @@ class Initializer {
     private static void andi() {
         // andi rt rs imm
         int opcode = 0b001100;
-        register("andi", opcode, List.of(REG5, REG5, IMM16),
+        register("andi", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -243,7 +243,7 @@ class Initializer {
     private static void ori() {
         // ori rt rs imm
         int opcode = 0b001101;
-        register("ori", opcode, List.of(REG5, REG5, IMM16),
+        register("ori", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -262,7 +262,7 @@ class Initializer {
     private static void xori() {
         // xori rt rs imm
         int opcode = 0b001110;
-        register("xori", opcode, List.of(REG5, REG5, IMM16),
+        register("xori", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[1], operands[0], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -281,7 +281,7 @@ class Initializer {
     private static void lui() {
         // lui rt imm
         int opcode = 0b001111;
-        register("lui", opcode, List.of(REG5, IMM16),
+        register("lui", List.of(REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, 0b000000, operands[0], operands[1]),
                 operands -> {
                     int rt = operands[0], imm = operands[1];
@@ -300,7 +300,7 @@ class Initializer {
     private static void bltz() {
         // bltz rs imm
         int opcode = 0b000001;
-        register("bltz", opcode, List.of(REG5, IMM16),
+        register("bltz", List.of(REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]),
                 operands -> {
                     int rs = operands[0], imm = operands[1];
@@ -320,7 +320,7 @@ class Initializer {
     private static void bgez() {
         // bgez rs imm
         int opcode = 0b000001;
-        register("bgez", opcode, List.of(REG5, IMM16),
+        register("bgez", List.of(REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[0], 0b00001, operands[1]),
                 operands -> {
                     int rs = operands[0], imm = operands[1];
@@ -340,7 +340,7 @@ class Initializer {
     private static void beq() {
         // beq rs rt imm
         int opcode = 0b000100;
-        register("beq", opcode, List.of(REG5, REG5, IMM16),
+        register("beq", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -361,7 +361,7 @@ class Initializer {
     private static void bne() {
         // bne rs rt imm
         int opcode = 0b000101;
-        register("bne", opcode, List.of(REG5, REG5, IMM16),
+        register("bne", List.of(REG5, REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[0], operands[1], operands[2]),
                 operands -> {
                     int rs = operands[0], rt = operands[1], imm = operands[2];
@@ -382,7 +382,7 @@ class Initializer {
     private static void blez() {
         // blez rs imm
         int opcode = 0b000110;
-        register("blez", opcode, List.of(REG5, IMM16),
+        register("blez", List.of(REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]),
                 operands -> {
                     int rs = operands[0], imm = operands[1];
@@ -402,7 +402,7 @@ class Initializer {
     private static void bgtz() {
         // bgtz rs imm
         int opcode = 0b000111;
-        register("bgtz", opcode, List.of(REG5, IMM16),
+        register("bgtz", List.of(REG5, IMM16),
                 operands -> new ITypeInstruction(opcode, operands[0], 0b00000, operands[1]),
                 operands -> {
                     int rs = operands[0], imm = operands[1];
@@ -423,7 +423,7 @@ class Initializer {
         // srl rd rt sa
         int opcode = 0b000000;
         int fun = 0b000010;
-        register("srl", opcode, List.of(REG5, REG5, REG5),
+        register("srl", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, 0b00000, operands[1], operands[0], operands[2], fun),
                 operands -> {
                     int rt = operands[1], rd = operands[0], sa = operands[2];
@@ -444,7 +444,7 @@ class Initializer {
         // add rd rs rt
         int opcode = 0b000000;
         int fun = 0b100000;
-        register("add", opcode, List.of(REG5, REG5, REG5),
+        register("add", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -471,7 +471,7 @@ class Initializer {
         // addu rd rs rt
         int opcode = 0b000000;
         int fun = 0b100001;
-        register("addu", opcode, List.of(REG5, REG5, REG5),
+        register("addu", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -493,7 +493,7 @@ class Initializer {
         // sub rd rs rt
         int opcode = 0b000000;
         int fun = 0b100010;
-        register("sub", opcode, List.of(REG5, REG5, REG5),
+        register("sub", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -520,7 +520,7 @@ class Initializer {
         // subu rd rs rt
         int opcode = 0b000000;
         int fun = 0b100011;
-        register("subu", opcode, List.of(REG5, REG5, REG5),
+        register("subu", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -543,7 +543,7 @@ class Initializer {
         // and rd rs rt
         int opcode = 0b000000;
         int fun = 0b100100;
-        register("and", opcode, List.of(REG5, REG5, REG5),
+        register("and", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -565,7 +565,7 @@ class Initializer {
         // or rd rs rt
         int opcode = 0b000000;
         int fun = 0b100101;
-        register("or", opcode, List.of(REG5, REG5, REG5),
+        register("or", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -587,7 +587,7 @@ class Initializer {
         // xor rd rs rt
         int opcode = 0b000000;
         int fun = 0b100110;
-        register("xor", opcode, List.of(REG5, REG5, REG5),
+        register("xor", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -609,7 +609,7 @@ class Initializer {
         // nor rd rs rt
         int opcode = 0b000000;
         int fun = 0b100111;
-        register("nor", opcode, List.of(REG5, REG5, REG5),
+        register("nor", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -631,7 +631,7 @@ class Initializer {
         // slt rd rs rt
         int opcode = 0b000000;
         int fun = 0b101010;
-        register("slt", opcode, List.of(REG5, REG5, REG5),
+        register("slt", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -653,7 +653,7 @@ class Initializer {
         // sltu rd rs rt
         int opcode = 0b000000;
         int fun = 0b101011;
-        register("sltu", opcode, List.of(REG5, REG5, REG5),
+        register("sltu", List.of(REG5, REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], operands[2], operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rt = operands[2], rd = operands[0];
@@ -676,7 +676,7 @@ class Initializer {
         // jr rs
         int opcode = 0b000000;
         int fun = 0b001000;
-        register("jr", opcode, List.of(REG5),
+        register("jr", List.of(REG5),
                 operands -> new RTypeInstruction(opcode, operands[0], 0b00000, 0b00000, 0b00000, fun),
                 operands -> {
                     int rs = operands[0];
@@ -695,7 +695,7 @@ class Initializer {
         // jalr rd rs
         int opcode = 0b000000;
         int fun = 0b001001;
-        register("jalr", opcode, List.of(REG5, REG5),
+        register("jalr", List.of(REG5, REG5),
                 operands -> new RTypeInstruction(opcode, operands[1], 0b00000, operands[0], 0b00000, fun),
                 operands -> {
                     int rs = operands[1], rd = operands[0];
@@ -716,7 +716,7 @@ class Initializer {
         // sysc
         int opcode = 0b000000;
         int fun = 0b001100;
-        register("sysc", opcode, List.of(),
+        register("sysc", List.of(),
                 operands -> new RTypeInstruction(opcode, 0b00000, 0b00000, 0b00000, 0b00000, fun),
                 operands -> new RTypeInstruction(opcode, 0b00000, 0b00000, 0b00000, 0b00000, fun) {
                     @Override
@@ -731,7 +731,7 @@ class Initializer {
     private static void eret() {
         // eret
         int opcode = 0b010000;
-        register("eret", opcode, List.of(),
+        register("eret", List.of(),
                 operands -> new RTypeInstruction(opcode, 0b10000, 0b00000, 0b00000, 0b00000, 0b011000),
                 operands -> new RTypeInstruction(opcode, 0b10000, 0b00000, 0b00000, 0b00000, 0b011000) {
                     @Override
@@ -745,7 +745,7 @@ class Initializer {
     private static void movg2s() {
         // movg2s rd rt
         int opcode = 0b010000;
-        register("movg2s", opcode, List.of(REG5, REG5),
+        register("movg2s", List.of(REG5, REG5),
                 operands -> new RTypeInstruction(opcode, 0b00100, operands[1], operands[0], 0b00000, 0b000000),
                 operands -> {
                     int rd = operands[0], rt = operands[1];
@@ -762,7 +762,7 @@ class Initializer {
     private static void movs2g() {
         // movs2g rd rt
         int opcode = 0b010000;
-        register("movs2g", opcode, List.of(REG5, REG5),
+        register("movs2g", List.of(REG5, REG5),
                 operands -> new RTypeInstruction(opcode, 0b00000, operands[1], operands[0], 0b00000, 0b000000),
                 operands -> {
                     int rd = operands[0], rt = operands[1];
@@ -779,7 +779,7 @@ class Initializer {
     private static void j() {
         // j iindex
         int opcode = 0b000010;
-        register("j", opcode, List.of(IINDEX26),
+        register("j", List.of(IINDEX26),
                 operands -> new JTypeInstruction(opcode, operands[0]),
                 operands -> {
                     int iindex = operands[0];
@@ -801,7 +801,7 @@ class Initializer {
     private static void jal() {
         // jal iindex
         int opcode = 0b000011;
-        register("jal", opcode, List.of(IINDEX26),
+        register("jal", List.of(IINDEX26),
                 operands -> new JTypeInstruction(opcode, operands[0]),
                 operands -> {
                     int iindex = operands[0];

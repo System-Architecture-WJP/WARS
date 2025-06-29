@@ -10,7 +10,6 @@ public class InstructionRegistry {
     private static final Map<String, InstructionCreator> encoderInstructionMap = Initializer.initializeEncoderMap();
     private static final Map<String, InstructionCreator> executableInstructionMap = Initializer.initializeExecutableMap();
     private static final Map<String, List<OperandType>> operandTypesMap = Initializer.initializeOperandTypesMap();
-    private static final Map<Integer, String> opcodeMap = Initializer.initializeOpcodeMap();
 
     public static Instruction create(String mnemonic, int[] operands) {
         if (!encoderInstructionMap.containsKey(mnemonic)) {
@@ -26,9 +25,5 @@ public class InstructionRegistry {
 
     public static List<OperandType> getOperandTypes(String mnemonic) {
         return operandTypesMap.get(mnemonic);
-    }
-
-    public static String getMnemonicByOpcode(int opcode) {
-        return opcodeMap.get(opcode);
     }
 }

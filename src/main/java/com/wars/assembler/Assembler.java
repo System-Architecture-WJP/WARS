@@ -45,8 +45,8 @@ public class Assembler {
             String binaryString = i.toBinaryString();
 
             outputPrintStream.println(binaryString);
-            long bits = Long.parseLong(binaryString, 2);
-            instructionBytecode.add((int) bits);
+            int bits = Integer.parseUnsignedInt(binaryString, 2);
+            instructionBytecode.add(bits);
         }
     }
 

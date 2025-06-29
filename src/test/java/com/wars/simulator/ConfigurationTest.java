@@ -1,8 +1,7 @@
-package simulator;
+package com.wars.simulator;
 
 import com.wars.instruction.Instruction;
 import com.wars.instruction.InstructionRegistry;
-import com.wars.simulator.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

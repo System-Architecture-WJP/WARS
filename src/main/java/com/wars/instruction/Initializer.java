@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.wars.operand.OperandType.*;
+import static com.wars.operand.OperandType.IINDEX26;
+import static com.wars.operand.OperandType.IMM16;
+import static com.wars.operand.OperandType.REG5;
 
 class Initializer {
     private static final Map<String, InstructionCreator> encoderInstructionMap = new HashMap<>();
@@ -713,7 +715,7 @@ class Initializer {
                 operands -> new RTypeInstruction(opcode, 0b00000, 0b00000, 0b00000, 0b00000, fun) {
                     @Override
                     public void execute(Configuration c) {
-                         c.halt();
+                        c.halt();
                     }
                 });
     }
@@ -777,7 +779,7 @@ class Initializer {
                         @Override
                         public void execute(Configuration c) {
                             // pc = bin_32(pc + 4)[31:28]iindex00
-                            long newPC = c.getPC() + iindex; 
+                            long newPC = c.getPC() + iindex;
                             c.setPC(newPC);
                         }
                     };

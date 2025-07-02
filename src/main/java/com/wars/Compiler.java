@@ -8,7 +8,7 @@ import com.wars.simulator.Configuration;
 import com.wars.simulator.Simulator;
 import com.wars.util.CodeTranslation;
 
-public class Main {
+public class Compiler {
     public static void main(String[] args) {
         Context.DEBUG = false;
 

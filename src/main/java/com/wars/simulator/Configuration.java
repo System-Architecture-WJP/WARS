@@ -45,7 +45,7 @@ public class Configuration {
     }
 
     public void setByteArray(byte[] arr, int startIndex) {
-        for(int i = 0; i < arr.length; i++){
+        for (int i = 0; i < arr.length; i++) {
             setByte(startIndex + i, arr[i]);
         }
     }

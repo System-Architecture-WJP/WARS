@@ -25,6 +25,7 @@ public class Assembler {
     private final OutputStream outputStream;
     private final LabelManager labelManager;
     private final Queue<Instruction> instructionsQueue;
+    private final List<Integer> instructionBytecode;
     private long currLine;
 
     public Assembler(InputStream inputStream, OutputStream outputStream, long currLine) {
@@ -32,6 +33,7 @@ public class Assembler {
         this.outputStream = outputStream;
         this.labelManager = new LabelManager(0);
         this.instructionsQueue = new LinkedList<>();
+        this.instructionBytecode = new ArrayList<>();
         this.currLine = currLine;
     }
 
@@ -41,7 +43,17 @@ public class Assembler {
         this.outputStream = OutputStream.nullOutputStream();
         this.labelManager = new LabelManager(0);
         this.instructionsQueue = new LinkedList<>();
+        this.instructionBytecode = new ArrayList<>();
         this.currLine = currLine;
+    }
+
+    public int[] getInstructionIntBytecode() {
+        if (instructionBytecode.isEmpty()) {
+            throw new AssemblerException("Needs to be assembled to binary string first.");
+        }
+        return instructionBytecode.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
     }
 
     private void drainInstructionsToBinaryString(PrintStream outputPrintStream) {
@@ -51,7 +63,11 @@ public class Assembler {
                 break;
             }
             instructionsQueue.remove();
+            String binaryString = i.toBinaryString();
+
             outputPrintStream.println(i.toBinaryString());
+            int bits = Integer.parseUnsignedInt(binaryString, 2);
+            instructionBytecode.add(bits);
         }
     }
 
@@ -62,7 +78,11 @@ public class Assembler {
                 break;
             }
             instructionsQueue.remove();
-            out.add(i.toBinaryString());
+            String binaryString = i.toBinaryString();
+
+            out.add(binaryString);
+            int bits = Integer.parseUnsignedInt(binaryString, 2);
+            instructionBytecode.add(bits);
         }
     }
     
@@ -134,8 +154,8 @@ public class Assembler {
     }
 
     private boolean handleMacro(String line) {
-        List<Instruction> instructions = Macro.evaluate(line); 
-        instructions.forEach(instructionsQueue::add);
+        List<Instruction> instructions = Macro.evaluate(line);
+        instructionsQueue.addAll(instructions);
         labelManager.increaseAddress(4 * instructions.size());
         return true;
         

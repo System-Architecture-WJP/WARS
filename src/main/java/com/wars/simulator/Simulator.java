@@ -1,93 +1,91 @@
 package com.wars.simulator;
 
-import java.nio.channels.Pipe.SourceChannel;
-
 import com.wars.exception.SimulatorException;
 import com.wars.instruction.InstructionRegistry;
 
 public class Simulator {
 
-    public static boolean SIMULATION = false;
+    public static Configuration simulate(int[] instructions) {
+        Configuration c = new Configuration();
 
-    public static Configuration simulate(int[] ints) {
-        var configuration = new Configuration(1024); // TODO how much memory???
-
-        for (int bin : ints) {
-            simulateStep(configuration, bin);
+        for (int i = 0; i < instructions.length; i++) {
+            c.setWord(i * 4, instructions[i]);
         }
-        return configuration;
+
+        while (c.hasWordAt((int) c.getPC()) && c.isRunning()) {
+            int instructionWord = c.getWord((int) c.getPC());
+            simulateStep(c, instructionWord);
+        }
+
+        return c;
     }
 
-    public static Configuration simulate(Configuration configuration) {
-
-        SIMULATION = true;
+    public static Configuration simulate(Configuration c) {
         int steps = 0;
-        int N = (1 << 15);
-        while (SIMULATION){
-            int PC = (int) configuration.getPC();
-            if (PC + 3 >= configuration.getMemory().length){
-                throw new SimulatorException("PC refers instruction outside of Memory: " + configuration.getPC());
+        int max_steps = (1 << 15);
+
+        while (steps < max_steps &&
+                c.hasWordAt((int) c.getPC()) &&
+                c.isRunning()) {
+            int PC = (int) c.getPC();
+
+            if (PC % 4 != 0) {
+                throw new SimulatorException("Fetch address is not word aligned: " + PC);
             }
-            if (PC % 4 != 0){
-                throw new SimulatorException("fetch address is not word aligned: " + PC);
-            }
-            int instr = configuration.getWord(PC);
-            simulateStep(configuration, instr);
-            
-            if (steps > N){
-                SIMULATION = false;
-            }
-            steps ++;
+
+            int instr = c.getWord(PC);
+            simulateStep(c, instr);
+
+            steps++;
         }
 
-        return configuration;
+        return c;
     }
 
-    private static void simulateStep(Configuration configuration, int bin) {
-        int opcode = (bin >>> 26);
+    private static void simulateStep(Configuration configuration, int instructionWord) {
+        int opcode = (instructionWord >>> 26);
 
         if (opcode == 0b000000 || opcode == 0b010000) {
-            simulateRType(configuration, bin);
+            simulateRType(configuration, opcode, instructionWord);
         } else if (opcode == 0b000010 || opcode == 0b000011) {
-            simulateJType(configuration, bin);
+            simulateJType(configuration, opcode, instructionWord);
         } else {
-            simulateIType(configuration, bin);
+            simulateIType(configuration, opcode, instructionWord);
         }
     }
 
-    private static void simulateIType(Configuration configuration, int bin) {
-        int opcode = (bin >>> 26);
-        int rs = (bin >>> 21) & 31;
-        int rt = (bin >>> 16) & 31;
-        int imm = (bin << 16) >> 16;
-
-        
-        String mnemonic = InstructionRegistry.getInstruction(opcode, rt);
+    private static void simulateIType(Configuration configuration, int opcode, int instructionWord) {
+        int rs = (instructionWord >>> 21) & 31;
+        int rt = (instructionWord >>> 16) & 31;
+        int imm = (instructionWord << 16) >> 16;
         int[] operands = {rs, rt, imm};
+
+        String mnemonic = MnemonicUtils.getMnemonicForIType(opcode, rt);
         executeInstruction(configuration, mnemonic, operands);
     }
 
-    private static void simulateRType(Configuration configuration, int bin) {
-        int opcode = (bin >>> 26);
-        int rs = (bin >>> 21) & 31;
-        int rt = (bin >>> 16) & 31;
-        int rd = (bin >>> 11) & 31;
-        int sa = (bin >>> 6) & 31;
-        int fun = bin & 0x3F;
-        String mnemonic = InstructionRegistry.getInstruction(opcode, fun);
-        int[] operands = {rd, rs, rt, sa, fun};
+    private static void simulateRType(Configuration configuration, int opcode, int instructionWord) {
+        int rs = (instructionWord >>> 21) & 31;
+        int rt = (instructionWord >>> 16) & 31;
+        int rd = (instructionWord >>> 11) & 31;
+        int sa = (instructionWord >>> 6) & 31;
+        int fun = instructionWord & 0x3F;
+        int[] operands = {rs, rt, rd, sa, fun};
+
+        String mnemonic = MnemonicUtils.getMnemonicForRType(opcode, fun, rs);
         executeInstruction(configuration, mnemonic, operands);
     }
 
-    private static void simulateJType(Configuration configuration, int bin) {
-        int opcode = (bin >>> 26);
-        int iindex = (bin << 6) >> 6;
-        String mnemonic = InstructionRegistry.getByOpcode(opcode);
+    private static void simulateJType(Configuration configuration, int opcode, int instructionWord) {
+        int iindex = (instructionWord << 6) >> 6;
         int[] operands = {iindex};
+
+        String mnemonic = MnemonicUtils.getMnemonicForJType(opcode);
         executeInstruction(configuration, mnemonic, operands);
     }
 
     private static void executeInstruction(Configuration configuration, String mnemonic, int[] operands) {
+        System.out.println("Executing instruction: " + mnemonic + " with operands: " + java.util.Arrays.toString(operands));
         var instruction = InstructionRegistry.getExecutableInstruction(mnemonic, operands);
         instruction.execute(configuration);
     }

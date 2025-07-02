@@ -7,39 +7,23 @@ import java.util.List;
 import java.util.Map;
 
 public class InstructionRegistry {
-
-    private static final Map<String, InstructionCreator> instructionCreatorMap = Initializer.initializeCreatorMap();
-    private static final Map<String, InstructionExecutor> instructionExecutorMap = Initializer.initializeExecutorMap();
+    private static final Map<String, InstructionCreator> encoderInstructionMap = Initializer.initializeEncoderMap();
+    private static final Map<String, InstructionCreator> executableInstructionMap = Initializer.initializeExecutableMap();
     private static final Map<String, List<OperandType>> operandTypesMap = Initializer.initializeOperandTypesMap();
-    private static final Map<Integer, String> opcodeMap = Initializer.initializeOpcodeMap();
-    private static final Map<Integer, String> funMap = Initializer.initializeFunMap();
 
     public static Instruction create(String mnemonic, int[] operands) {
-        if (!instructionCreatorMap.containsKey(mnemonic)) {
-            throw new AssemblerException("Unknown instruction: " + mnemonic + " Possible instructions: " + instructionCreatorMap.keySet());
+        if (!encoderInstructionMap.containsKey(mnemonic)) {
+            throw new AssemblerException("Unknown instruction: " + mnemonic + " Possible instructions: " + encoderInstructionMap.keySet());
         }
 
-        return instructionCreatorMap.get(mnemonic).create(operands);
+        return encoderInstructionMap.get(mnemonic).create(operands);
     }
 
     public static Instruction getExecutableInstruction(String mnemonic, int[] operands) {
-        return instructionExecutorMap.get(mnemonic).execute(operands);
+        return executableInstructionMap.get(mnemonic).create(operands);
     }
 
     public static List<OperandType> getOperandTypes(String mnemonic) {
         return operandTypesMap.get(mnemonic);
     }
-
-    public static String getByOpcode(int opcode) {
-        return opcodeMap.get(opcode);
-    }
-
-    public static String getInstruction(int opcode, int fun){
-        if (opcode != 0b000000 && opcode != 0b000001){
-            return opcodeMap.get(opcode);
-        }
-        return funMap.get(fun);
-    }
-
-    
 }

@@ -1,15 +1,21 @@
 package com.wars.simulator;
 
 
-public class Configuration {
-    private long pc;
-    private final int[] gpr;
-    private final byte[] memory;
+import java.util.HashMap;
+import java.util.Map;
 
-    public Configuration(int memorySize) {
+public class Configuration {
+    private final int[] gpr;
+    private final Map<Integer, Byte> memory;
+    private long pc;
+
+    private boolean isRunning;
+
+    public Configuration() {
         this.pc = 0L;
         this.gpr = new int[32];
-        this.memory = new byte[memorySize];
+        this.memory = new HashMap<>();
+        this.isRunning = true;
     }
 
     public long getPC() {
@@ -31,11 +37,11 @@ public class Configuration {
     }
 
     public byte getByte(int address) {
-        return memory[address];
+        return memory.getOrDefault(address, (byte) 0);
     }
 
     public void setByte(int address, byte value) {
-        memory[address] = value;
+        memory.put(address, value);
     }
 
     public void setByteArray(byte[] arr, int startIndex) {
@@ -45,21 +51,29 @@ public class Configuration {
     }
 
     public int getWord(int address) {
-        return ((memory[address] & 0xFF) << 24) |
-                ((memory[address + 1] & 0xFF) << 16) |
-                ((memory[address + 2] & 0xFF) << 8) |
-                (memory[address + 3] & 0xFF);
+        return ((getByte(address) & 0xFF) << 24) |
+                ((getByte(address + 1) & 0xFF) << 16) |
+                ((getByte(address + 2) & 0xFF) << 8) |
+                (getByte(address + 3) & 0xFF);
     }
 
     public void setWord(int address, int value) {
-        memory[address] = (byte) ((value >>> 24) & 0xFF);
-        memory[address + 1] = (byte) ((value >>> 16) & 0xFF);
-        memory[address + 2] = (byte) ((value >>> 8) & 0xFF);
-        memory[address + 3] = (byte) (value & 0xFF);
+        memory.put(address, (byte) ((value >>> 24) & 0xFF));
+        memory.put(address + 1, (byte) ((value >>> 16) & 0xFF));
+        memory.put(address + 2, (byte) ((value >>> 8) & 0xFF));
+        memory.put(address + 3, (byte) (value & 0xFF));
     }
 
-    public byte[] getMemory(){
-        return this.memory;
+    public boolean hasWordAt(int address) {
+        return memory.containsKey(address);
+    }
+
+    public void halt() {
+        this.isRunning = false;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 
     @Override

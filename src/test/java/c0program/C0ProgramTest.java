@@ -15,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class C0ProgramTest {
 
     private Configuration config;
-    private int K = (1 << 10);
+    private final int K = (1 << 10);
 
     @BeforeEach
     void setUp() {
-        config = new Configuration(14 * K); // Initialize with 14KB of memory
+        config = new Configuration();
     }
 
     @Test

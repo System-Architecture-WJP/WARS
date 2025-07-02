@@ -1,6 +1,6 @@
 package com.wars.instruction;
 
-
+@FunctionalInterface
 interface InstructionCreator {
     /*
      * Operand order in the list matches the order in the assembly syntax. Examples:

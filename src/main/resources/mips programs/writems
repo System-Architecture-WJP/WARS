@@ -1,0 +1,12 @@
+writems:
+sw 31 29 -12
+addi 1 29 -8
+lw 1 1 0
+addi 1 1 0
+addi 2 29 -4
+lw 2 2 0
+addi 2 2 0
+sw 1 2 0
+lw 1 29 -12
+addi 29 29 -12
+jr 1

@@ -1,4 +1,4 @@
-package c0program;
+package com.wars.c0program;
 
 import com.wars.c0program.C0Program;
 import com.wars.simulator.Configuration;

@@ -18,7 +18,7 @@ public class App {
         Assembler asm = new Assembler(in, out, 0);
         asm.assembleToBinaryString();
 
-        int[] instructions = asm.getInstructionIntBytecode();
+        int[] instructions = asm.toByteCodeArray();
         Configuration res = Simulator.simulate(instructions);
         System.out.println(res);
     }

@@ -14,7 +14,6 @@ import com.wars.engine.assembler.Assembler;
 
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Arrays;
 
 import static com.wars.compiler.util.Context.DEBUG;
 
@@ -126,23 +125,17 @@ public class CodeTranslation {
 
     }
     
-    public static String MIPSTranslation(String mips){
-        Assembler ams = new Assembler(Arrays.asList(mips.split("\n")), 0);
-        List<String> out = ams.assembleToBinaryStringList();
-        return String.join("\n", out);
+    public static int[] MIPSTranslation(String mips){
+        Assembler ams = new Assembler(mips, 0);
+        return ams.toByteCodeArray();
     }
 
     public static byte[] MIPSTranslationByteArray(String mips){
-        String code = MIPSTranslation(mips);
-        String[] codeLines = code.split("\n");
+        int[] codeLines = MIPSTranslation(mips);
         byte [] byteCode = new byte[4 * codeLines.length];
         int size = 0;
-        for (String codeLine : codeLines){
-            if (codeLine.isBlank()){
-                continue;
-            }
-            int instr = (int) Long.parseLong(codeLine, 2);
-            byteCode[size + 0] = (byte) ((instr >> 24) & 0xFF);
+        for (int instr : codeLines){
+            byteCode[size] = (byte) ((instr >> 24) & 0xFF);
             byteCode[size + 1] = (byte) ((instr >> 16) & 0xFF);
             byteCode[size + 2] = (byte) ((instr >> 8) & 0xFF);
             byteCode[size + 3] = (byte) (instr & 0xFF);

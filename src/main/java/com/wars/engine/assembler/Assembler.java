@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 import com.wars.engine.macro.Macro;
 
@@ -25,7 +26,6 @@ public class Assembler {
     private final OutputStream outputStream;
     private final LabelManager labelManager;
     private final Queue<Instruction> instructionsQueue;
-    private final List<Integer> instructionBytecode;
     private long currLine;
 
     public Assembler(InputStream inputStream, OutputStream outputStream, long currLine) {
@@ -33,76 +33,53 @@ public class Assembler {
         this.outputStream = outputStream;
         this.labelManager = new LabelManager(0);
         this.instructionsQueue = new LinkedList<>();
-        this.instructionBytecode = new ArrayList<>();
         this.currLine = currLine;
     }
 
-    public Assembler(List<String> codeLines, long currLine) {
-        String joined = String.join("\n", codeLines);
-        this.inputScanner = new Scanner(joined);
+    public Assembler(String codeLines, long currLine) {
+        this.inputScanner = new Scanner(codeLines);
         this.outputStream = OutputStream.nullOutputStream();
         this.labelManager = new LabelManager(0);
         this.instructionsQueue = new LinkedList<>();
-        this.instructionBytecode = new ArrayList<>();
         this.currLine = currLine;
     }
 
-    public int[] getInstructionIntBytecode() {
-        if (instructionBytecode.isEmpty()) {
-            throw new AssemblerException("Needs to be assembled to binary string first.");
-        }
-        return instructionBytecode.stream()
-                .mapToInt(Integer::intValue)
-                .toArray();
-    }
-
-    private void drainInstructionsToBinaryString(PrintStream outputPrintStream) {
-        while (!instructionsQueue.isEmpty()) {
-            Instruction i = instructionsQueue.peek();
-            if (!i.isResolved()) {
-                break;
-            }
-            instructionsQueue.remove();
-            String binaryString = i.toBinaryString();
-
-            outputPrintStream.println(i.toBinaryString());
-            int bits = Integer.parseUnsignedInt(binaryString, 2);
-            instructionBytecode.add(bits);
-        }
-    }
-
-    private void drainInstructionsToList(List<String> out) {
-        while (!instructionsQueue.isEmpty()) {
-            Instruction i = instructionsQueue.peek();
-            if (!i.isResolved()) {
-                break;
-            }
-            instructionsQueue.remove();
-            String binaryString = i.toBinaryString();
-
-            out.add(binaryString);
-            int bits = Integer.parseUnsignedInt(binaryString, 2);
-            instructionBytecode.add(bits);
-        }
-    }
-    
     public void assembleToBinaryString() {
-        PrintStream outputPrintStream = new PrintStream(outputStream);
-        
-        while (advance()) {
-            drainInstructionsToBinaryString(outputPrintStream);
+        try (PrintStream outputPrintStream = new PrintStream(outputStream)) {
+            var instructionConsumer = (Consumer<Instruction>) instruction -> {
+                String binaryString = instruction.toBinaryString();
+                outputPrintStream.println(binaryString);
+            };
+
+            while (advance()) {
+                drainInstructions(instructionConsumer);
+            }
+            drainInstructions(instructionConsumer);
         }
-        drainInstructionsToBinaryString(outputPrintStream);
     }
 
-    public List<String> assembleToBinaryStringList() {
-        List<String> out = new ArrayList<>();
+    public int[] toByteCodeArray() {
+        List<Integer> out = new ArrayList<>();
+        var instructionConsumer = (Consumer<Instruction>) instruction -> {
+            out.add(instruction.encode());
+        };
 
         while (advance()) {
-            drainInstructionsToList(out);
+            drainInstructions(instructionConsumer);
         }
-        drainInstructionsToList(out);
-        return out;
+        drainInstructions(instructionConsumer);
+        return out.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private void drainInstructions(Consumer<Instruction> consumer) {
+        while (!instructionsQueue.isEmpty()) {
+            Instruction i = instructionsQueue.peek();
+            if (!i.isResolved()) {
+                break;
+            }
+            instructionsQueue.remove();
+            consumer.accept(i);
+        }
     }
 
     private boolean advance() {

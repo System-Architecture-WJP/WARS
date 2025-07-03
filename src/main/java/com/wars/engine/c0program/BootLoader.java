@@ -26,7 +26,7 @@ public class BootLoader extends C0Program {
 
     public String code;
     public String mipsCode;
-    public String byteCode;
+    public int[] byteCode;
     
 
     public BootLoader(int K, int a, int b,  int HDBASE, int SBASE, int SMAX, int HBASE, int HMAX, int KernelStart, String code) {
@@ -167,7 +167,7 @@ public class BootLoader extends C0Program {
         return this.code;
     }
 
-    public String getByteCode(){
+    public int[] getByteCode(){
         return this.byteCode;
     }
 }

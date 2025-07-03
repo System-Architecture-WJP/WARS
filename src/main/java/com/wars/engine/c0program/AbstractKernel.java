@@ -24,7 +24,7 @@ public class AbstractKernel extends C0Program {
 
     public String code;
     public String mipsCode;
-    public String byteCode;
+    public int[] byteCode;
     
 
     public AbstractKernel(int K, int p, int PTLE, int PTASIZE, int nup, int SBASE, int SMAX, int HBASE, int HMAX, int HDBASE, int UPBASE, int SMSIZE, int SMUSERPAGE, int SMBASE, int a, int b, String code) {
@@ -365,7 +365,7 @@ public class AbstractKernel extends C0Program {
         return this.code;
     }
 
-    public String getByteCode(){
+    public int[] getByteCode(){
         return this.byteCode;
     }
 }

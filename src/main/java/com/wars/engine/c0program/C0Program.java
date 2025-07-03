@@ -15,7 +15,7 @@ public class C0Program {
 
     public String code;
     public String mipsCode;
-    public String byteCode;
+    public int[] byteCode;
 
     public C0Program(int a, int b, int SBASE, int SMAX, int HBASE, int HMAX, String code){
         this.a = a;
@@ -59,10 +59,8 @@ public class C0Program {
         return CodeTranslation.C0Translation(adjustedCode, true);
     }
 
-    public String byteCode(String mipsCode){
-        String byteCode = CodeTranslation.MIPSTranslation(mipsCode);
-
-        return byteCode;
+    public int[] byteCode(String mipsCode){
+        return CodeTranslation.MIPSTranslation(mipsCode);
     }
 
     public static String toC0Grammar(String code){
@@ -111,12 +109,8 @@ public class C0Program {
         return this.code;
     }
 
-    public String getByteCode(){
+    public int[] getByteCode(){
         return this.byteCode;
     }
-
-    
-
-
 
 }

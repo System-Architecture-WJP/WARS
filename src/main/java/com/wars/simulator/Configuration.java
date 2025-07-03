@@ -5,16 +5,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Configuration {
-    private final int[] gpr;
-    private final Map<Integer, Byte> memory;
-    private long pc;
+    private static final int PAGE_SHIFT = 12; // 2^12 = 4096 bytes per page
+    private static final int PAGE_SIZE = 1 << PAGE_SHIFT;
+    private static final int PAGE_MASK = PAGE_SIZE - 1;
 
+    private long pc;
+    private final int[] gpr;
+    private final Map<Integer, byte[]> memoryPaged;
     private boolean isRunning;
 
     public Configuration() {
         this.pc = 0L;
         this.gpr = new int[32];
-        this.memory = new HashMap<>();
+        this.memoryPaged = new HashMap<>();
         this.isRunning = true;
     }
 
@@ -37,11 +40,27 @@ public class Configuration {
     }
 
     public byte getByte(int address) {
-        return memory.getOrDefault(address, (byte) 0);
+        int pageNumber = address >>> PAGE_SHIFT;
+        int offset = address & PAGE_MASK;
+
+        if (!memoryPaged.containsKey(pageNumber)) {
+            return 0;
+        }
+
+        byte[] page = memoryPaged.get(pageNumber);
+        return page[offset];
     }
 
     public void setByte(int address, byte value) {
-        memory.put(address, value);
+        int pageNumber = address >>> PAGE_SHIFT;
+        int offset = address & PAGE_MASK;
+
+        byte[] page = getPage(pageNumber);
+        page[offset] = value;
+    }
+
+    private byte[] getPage(int pageNumber) {
+        return memoryPaged.computeIfAbsent(pageNumber, k -> new byte[PAGE_SIZE]);
     }
 
     public void setByteArray(byte[] arr, int startIndex) {
@@ -58,14 +77,15 @@ public class Configuration {
     }
 
     public void setWord(int address, int value) {
-        memory.put(address, (byte) ((value >>> 24) & 0xFF));
-        memory.put(address + 1, (byte) ((value >>> 16) & 0xFF));
-        memory.put(address + 2, (byte) ((value >>> 8) & 0xFF));
-        memory.put(address + 3, (byte) (value & 0xFF));
+        setByte(address, (byte) ((value >>> 24) & 0xFF));
+        setByte(address + 1, (byte) ((value >>> 16) & 0xFF));
+        setByte(address + 2, (byte) ((value >>> 8) & 0xFF));
+        setByte(address + 3, (byte) (value & 0xFF));
     }
 
     public boolean hasWordAt(int address) {
-        return memory.containsKey(address);
+        int pageNumber = address >>> PAGE_SHIFT;
+        return memoryPaged.containsKey(pageNumber);
     }
 
     public void halt() {
@@ -90,4 +110,5 @@ public class Configuration {
         sb.append("}}");
         return sb.toString();
     }
+
 }

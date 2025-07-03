@@ -1,6 +1,5 @@
 package com.wars.c0program;
 
-import com.wars.c0program.C0Program;
 import com.wars.simulator.Configuration;
 import com.wars.simulator.Simulator;
 import com.wars.util.CodeTranslation;

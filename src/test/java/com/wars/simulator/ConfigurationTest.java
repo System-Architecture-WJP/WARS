@@ -1,4 +1,4 @@
-package simulator;
+package com.wars.simulator;
 
 import com.wars.instruction.Instruction;
 import com.wars.instruction.InstructionRegistry;

@@ -103,12 +103,6 @@ public class CodeGenerator {
         return size; 
     }
 
-    private void gammaAddress(DTE ifConditionNode, DTE ifPart){
-        if (ifConditionNode.getBorderWord().equals("(bool)ipf") && ifPart.getBorderWord().equals("ipfHandler();gpr(1)=PCB[CP].GPR[0]&;asm( macro: restore-user )")){
-            Context.gammaAddress = totalProgramRealSize(true);
-        }
-    }
-
     public Grammar g;
 
     public void setGrammar(Grammar g) {
@@ -477,6 +471,7 @@ public class CodeGenerator {
             gmSize = 0;
         }
 
+        int gammaAddress = 0; 
         StringBuilder res = new StringBuilder();
         if (program){
             res.append("macro: gpr(" + HPT + ") = enc(" + HBASE + ", uint)\n");
@@ -487,13 +482,21 @@ public class CodeGenerator {
             res.append("macro: zero(" + BPT + ", 1)\n");
             res.append("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
             res.append("j _" + headFunction + "\n\n");
+            gammaAddress = Context.programInit;
         }
 
-        res.append("_main:\n");
+        res.append("_" + headFunction + ":\n");
         List<String> mainInstructions = functionInstructions.get(headFunction);
         res.append(String.join("\n", mainInstructions))
                 .append("\n");
-
+        
+        for(String instr: mainInstructions){
+            if (instr.equals("macro: save-user")) {
+                Context.gammaAddress = gammaAddress;
+            }
+            gammaAddress += instructionRealSize(instr);
+        } 
+        
         functionInstructions.forEach((key, value) -> {
             if (!key.equals(headFunction)) {
                 res.append("\n_").append(key).append(":\n")
@@ -501,6 +504,16 @@ public class CodeGenerator {
                         .append("\n");
             }
         });
+
+        // gamma address bootloader jumps in case no reset. 
+        for (Map.Entry<String, List<String>> entry : functionInstructions.entrySet()) {
+            for (String instr : entry.getValue()) {
+                if (instr.equals("macro: save-user")) {
+                    Context.gammaAddress = gammaAddress;
+                }
+                gammaAddress += instructionRealSize(instr);
+            }
+        }
         return res.toString();
     }
 
@@ -592,8 +605,6 @@ public class CodeGenerator {
 
         DTE ifConditionNode = dte.getBrother();
         DTE ifPart = dte.getNthBrother(3);
-
-        gammaAddress(ifConditionNode, ifPart);
 
 
         VarReg ifCondition = evaluateBooleanExpression(ifConditionNode);

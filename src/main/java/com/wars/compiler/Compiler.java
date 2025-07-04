@@ -13,7 +13,7 @@ public class Compiler {
         Context.DEBUG = true;
 
         BootLoader bt = BootLoader.generateBootLoader();
-        AbstractKernel ab = AbstractKernel.generateAbstractKernel();
+        // AbstractKernel ab = AbstractKernel.generateAbstractKernel();
 
         int a = 2;
         int b = 10;
@@ -30,6 +30,6 @@ public class Compiler {
         System.out.println("a: " + config.getWord(pr.SBASE));
         System.out.println("a: " + config.getWord(pr.SBASE + 4));
         System.out.println(res);
-        System.out.println(bt.getCode());
+        System.out.println(Context.gammaAddress);
     }
 }

@@ -31,7 +31,7 @@ public class BootLoader extends C0Program {
     public String mipsCode;
     public int[] byteCode;
 
-    public static String BootLoaderFileName = "src/main/java/com/wars/engine/c0program/BootLoader.txt";
+    public static String BootLoaderFileName = "src/main/resources/c0 programs/BootLoader.txt";
 
 
     public BootLoader(String code){

@@ -507,6 +507,8 @@ public class CodeGenerator {
 
         // gamma address bootloader jumps in case no reset. 
         for (Map.Entry<String, List<String>> entry : functionInstructions.entrySet()) {
+            if (entry.getKey().equals(headFunction)) 
+                continue;
             for (String instr : entry.getValue()) {
                 if (instr.equals("macro: save-user")) {
                     Context.gammaAddress = gammaAddress;

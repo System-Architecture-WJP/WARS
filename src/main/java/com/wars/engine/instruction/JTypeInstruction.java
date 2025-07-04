@@ -1,6 +1,6 @@
 package com.wars.engine.instruction;
 
-import com.wars.engine.exception.AssemblerException;
+import com.wars.engine.exception.assembler.AssemblerException;
 
 public class JTypeInstruction extends Instruction {
     private final long address;

@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.wars.engine.exception.AssemblerException;
+import com.wars.engine.exception.assembler.AssemblerException;
+import com.wars.engine.exception.assembler.label.LabelConflictException;
 import com.wars.engine.instruction.JTypeInstruction;
 
 public class LabelManager {
@@ -24,7 +25,7 @@ public class LabelManager {
             return;
         }
         if (l.isDefined()) {
-            throw new AssemblerException("Double definition of " + label
+            throw new LabelConflictException("Double definition of " + label
                     + " label. First time seen at line " + l.getLine());
         }
         l.define(currAddress, line);

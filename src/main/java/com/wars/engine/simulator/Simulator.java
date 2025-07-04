@@ -1,7 +1,7 @@
 package com.wars.engine.simulator;
 
+import com.wars.engine.exception.simulator.UnalignedMemoryAccessException;
 import com.wars.engine.instruction.InstructionRegistry;
-import com.wars.engine.exception.SimulatorException;
 import com.wars.engine.util.Log;
 
 public class Simulator {
@@ -22,7 +22,7 @@ public class Simulator {
             int PC = (int) c.getPC();
 
             if (PC % 4 != 0) {
-                throw new SimulatorException("Fetch address is not word aligned: " + PC);
+                throw new UnalignedMemoryAccessException(PC);
             }
 
             int instr = c.getWord(PC);
@@ -78,7 +78,7 @@ public class Simulator {
 
     private static void executeInstruction(Configuration configuration, String mnemonic, int[] operands) {
         Log.info("Executing instruction: " + mnemonic + " with operands: " + java.util.Arrays.toString(operands));
-        var instruction = InstructionRegistry.getExecutableInstruction(mnemonic, operands);
+        var instruction = InstructionRegistry.createForExecutor(mnemonic, operands);
         instruction.execute(configuration);
     }
 

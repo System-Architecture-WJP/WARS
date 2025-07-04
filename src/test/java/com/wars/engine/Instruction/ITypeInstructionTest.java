@@ -15,7 +15,7 @@ class ITypeInstructionTest {
     @ParameterizedTest
     @MethodSource("provideValidITypeInstructions")
     void testITypeInstructions(String mnemonic, int[] operands, String expectedBinary) {
-        Instruction instruction = InstructionRegistry.create(mnemonic, operands);
+        Instruction instruction = InstructionRegistry.createForEncoder(mnemonic, operands);
         assertEquals(expectedBinary.replaceAll("_", ""), instruction.toBinaryString());
     }
 

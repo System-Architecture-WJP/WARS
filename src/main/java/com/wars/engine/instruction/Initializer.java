@@ -1,7 +1,7 @@
 package com.wars.engine.instruction;
 
+import com.wars.engine.exception.simulator.UnalignedMemoryAccessException;
 import com.wars.engine.operand.OperandType;
-import com.wars.engine.exception.SimulatorException;
 import com.wars.engine.simulator.Configuration;
 
 import java.util.HashMap;
@@ -98,7 +98,7 @@ class Initializer {
                             int address = c.getRegister(rs) + imm;
 
                             if (address % 4 != 0) {
-                                throw new SimulatorException("Unaligned memory access at address: " + address);
+                                throw new UnalignedMemoryAccessException(address);
                             }
 
                             int value = c.getWord(address);
@@ -123,7 +123,7 @@ class Initializer {
                             int address = c.getRegister(rs) + imm;
 
                             if (address % 4 != 0) {
-                                throw new SimulatorException("Unaligned memory access at address: " + address);
+                                throw new UnalignedMemoryAccessException(address);
                             }
 
                             int value = c.getRegister(rt);

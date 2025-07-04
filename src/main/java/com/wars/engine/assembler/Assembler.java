@@ -1,9 +1,9 @@
 package com.wars.engine.assembler;
 
+import com.wars.engine.exception.assembler.label.UnresolvedLabelsException;
 import com.wars.engine.label.Label;
 import com.wars.engine.label.LabelManager;
 import com.wars.engine.operand.OperandParser;
-import com.wars.engine.exception.AssemblerException;
 import com.wars.engine.instruction.Instruction;
 import com.wars.engine.instruction.InstructionRegistry;
 import com.wars.engine.instruction.JTypeInstruction;
@@ -86,9 +86,7 @@ public class Assembler {
         if (!inputScanner.hasNextLine()) {
             List<Label> unresolvedLabels = labelManager.getUndefined();
             if (!unresolvedLabels.isEmpty()) {
-                throw new AssemblerException(
-                        "Not all labels are resolved at the end of input stream: "
-                                + unresolvedLabels);
+                throw new UnresolvedLabelsException(unresolvedLabels.toString());
             }
             return false;
         }
@@ -122,7 +120,7 @@ public class Assembler {
         } else {
             var expectedOperandTypes = InstructionRegistry.getOperandTypes(mnemonic);
             int[] parsedOperands = OperandParser.parseAll(operands, expectedOperandTypes);
-            instruction = InstructionRegistry.create(mnemonic, parsedOperands);
+            instruction = InstructionRegistry.createForEncoder(mnemonic, parsedOperands);
         }
 
         instructionsQueue.add(instruction);

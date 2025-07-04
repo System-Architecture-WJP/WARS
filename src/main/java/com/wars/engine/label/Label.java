@@ -3,7 +3,7 @@ package com.wars.engine.label;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.wars.engine.exception.AssemblerException;
+import com.wars.engine.exception.assembler.label.LabelConflictException;
 import com.wars.engine.instruction.JTypeInstruction;
 
 public class Label {
@@ -51,7 +51,7 @@ public class Label {
     
     public void addInstruction(JTypeInstruction instruction) {
         if (isDefined()) {
-            throw new AssemblerException("Attempt to add an instuction to defined label");
+            throw new LabelConflictException("Attempt to add an instruction to defined label");
         }
         instructions.add(instruction);
     }

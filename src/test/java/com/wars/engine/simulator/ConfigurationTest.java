@@ -29,7 +29,7 @@ class ConfigurationTest {
         config.setWord(address, valueToStore);  // Mem[100] = 14
 
         // Create and execute the lw instruction: lw $3, 0($2)
-        Instruction lw = InstructionRegistry.getExecutableInstruction("lw", new int[]{rs, rt, imm});
+        Instruction lw = InstructionRegistry.createForExecutor("lw", new int[]{rs, rt, imm});
         lw.execute(config);
 
         // Assert
@@ -51,7 +51,7 @@ class ConfigurationTest {
         config.setWord(effectiveAddress, valueToStore); // Mem[208] = 42
 
         // Create and execute the lw instruction: lw $3, 0($2)
-        Instruction lw = InstructionRegistry.getExecutableInstruction("lw", new int[]{rs, rt, imm});
+        Instruction lw = InstructionRegistry.createForExecutor("lw", new int[]{rs, rt, imm});
         lw.execute(config);
 
         // Assert
@@ -72,7 +72,7 @@ class ConfigurationTest {
         config.setRegister(rt, valueToStore); // $2 = 42
 
         // Create and execute: sw $2, 0($1)
-        Instruction sw = InstructionRegistry.getExecutableInstruction("sw", new int[]{rs, rt, imm});
+        Instruction sw = InstructionRegistry.createForExecutor("sw", new int[]{rs, rt, imm});
         sw.execute(config);
 
         // Assert that memory at address 200 contains 42
@@ -93,7 +93,7 @@ class ConfigurationTest {
         config.setRegister(rt, valueToStore); // $5 = 55
 
         // Create and execute: sw $5, 16($4)
-        Instruction sw = InstructionRegistry.getExecutableInstruction("sw", new int[]{rs, rt, imm});
+        Instruction sw = InstructionRegistry.createForExecutor("sw", new int[]{rs, rt, imm});
         sw.execute(config);
 
         // Assert memory at 316 (300 + 16) holds 55
@@ -111,7 +111,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, base);
 
-        Instruction addi = InstructionRegistry.getExecutableInstruction("addi", new int[]{rs, rt, imm});
+        Instruction addi = InstructionRegistry.createForExecutor("addi", new int[]{rs, rt, imm});
         addi.execute(config);
 
         assertEquals(base + imm, config.getRegister(rt),
@@ -127,7 +127,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, base);
 
-        Instruction addi = InstructionRegistry.getExecutableInstruction("addi", new int[]{rs, rt, imm});
+        Instruction addi = InstructionRegistry.createForExecutor("addi", new int[]{rs, rt, imm});
         addi.execute(config);
 
         int expected = base + ((short) imm); // convert to signed short
@@ -144,7 +144,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, base);
 
-        Instruction addiu = InstructionRegistry.getExecutableInstruction("addiu", new int[]{rs, rt, imm});
+        Instruction addiu = InstructionRegistry.createForExecutor("addiu", new int[]{rs, rt, imm});
         addiu.execute(config);
 
         assertEquals(base + imm, config.getRegister(rt),
@@ -160,7 +160,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, base);
 
-        Instruction addiu = InstructionRegistry.getExecutableInstruction("addiu", new int[]{rs, rt, imm});
+        Instruction addiu = InstructionRegistry.createForExecutor("addiu", new int[]{rs, rt, imm});
         addiu.execute(config);
 
         int expected = base + (short) imm; // sign-extend properly
@@ -175,7 +175,7 @@ class ConfigurationTest {
         config.setRegister(rs, 5);
         int imm = 10;
 
-        Instruction slti = InstructionRegistry.getExecutableInstruction("slti", new int[]{rs, rt, imm});
+        Instruction slti = InstructionRegistry.createForExecutor("slti", new int[]{rs, rt, imm});
         slti.execute(config);
 
         assertEquals(1, config.getRegister(rt), "Expected $3 to be 1 because 5 < 10");
@@ -188,7 +188,7 @@ class ConfigurationTest {
         config.setRegister(rs, 10);
         int imm = 10;
 
-        Instruction slti = InstructionRegistry.getExecutableInstruction("slti", new int[]{rs, rt, imm});
+        Instruction slti = InstructionRegistry.createForExecutor("slti", new int[]{rs, rt, imm});
         slti.execute(config);
 
         assertEquals(0, config.getRegister(rt), "Expected $3 to be 0 because 10 is not less than 10");
@@ -201,7 +201,7 @@ class ConfigurationTest {
         config.setRegister(rs, 0);
         int imm = -1; // 0xFFFF
 
-        Instruction slti = InstructionRegistry.getExecutableInstruction("slti", new int[]{rs, rt, imm});
+        Instruction slti = InstructionRegistry.createForExecutor("slti", new int[]{rs, rt, imm});
         slti.execute(config);
 
         assertEquals(0, config.getRegister(rt), "Expected $3 to be 0 because 0 > -1");
@@ -214,7 +214,7 @@ class ConfigurationTest {
         config.setRegister(rs, -10);
         int imm = -5;
 
-        Instruction slti = InstructionRegistry.getExecutableInstruction("slti", new int[]{rs, rt, imm});
+        Instruction slti = InstructionRegistry.createForExecutor("slti", new int[]{rs, rt, imm});
         slti.execute(config);
 
         assertEquals(1, config.getRegister(rt), "Expected $3 to be 1 because -10 < -5");
@@ -227,7 +227,7 @@ class ConfigurationTest {
         config.setRegister(rs, 5);
         int imm = 10;
 
-        Instruction sltiu = InstructionRegistry.getExecutableInstruction("sltiu", new int[]{rs, rt, imm});
+        Instruction sltiu = InstructionRegistry.createForExecutor("sltiu", new int[]{rs, rt, imm});
         sltiu.execute(config);
 
         assertEquals(1, config.getRegister(rt));
@@ -240,7 +240,7 @@ class ConfigurationTest {
         config.setRegister(rs, 10);
         int imm = 10;
 
-        Instruction sltiu = InstructionRegistry.getExecutableInstruction("sltiu", new int[]{rs, rt, imm});
+        Instruction sltiu = InstructionRegistry.createForExecutor("sltiu", new int[]{rs, rt, imm});
         sltiu.execute(config);
 
         assertEquals(0, config.getRegister(rt));
@@ -253,7 +253,7 @@ class ConfigurationTest {
         config.setRegister(rs, 20);
         int imm = 10;
 
-        Instruction sltiu = InstructionRegistry.getExecutableInstruction("sltiu", new int[]{rs, rt, imm});
+        Instruction sltiu = InstructionRegistry.createForExecutor("sltiu", new int[]{rs, rt, imm});
         sltiu.execute(config);
 
         assertEquals(0, config.getRegister(rt));
@@ -266,7 +266,7 @@ class ConfigurationTest {
         config.setRegister(rs, -1); // 0xFFFFFFFF (unsigned: 4294967295)
         int imm = 10;
 
-        Instruction sltiu = InstructionRegistry.getExecutableInstruction("sltiu", new int[]{rs, rt, imm});
+        Instruction sltiu = InstructionRegistry.createForExecutor("sltiu", new int[]{rs, rt, imm});
         sltiu.execute(config);
 
         assertEquals(0, config.getRegister(rt));
@@ -279,7 +279,7 @@ class ConfigurationTest {
         config.setRegister(rs, 0);
         int imm = 0xFFFF;
 
-        Instruction sltiu = InstructionRegistry.getExecutableInstruction("sltiu", new int[]{rs, rt, imm});
+        Instruction sltiu = InstructionRegistry.createForExecutor("sltiu", new int[]{rs, rt, imm});
         sltiu.execute(config);
 
         assertEquals(1, config.getRegister(rt));
@@ -293,7 +293,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0xFFFFFFFF); // All bits set
 
-        Instruction andi = InstructionRegistry.getExecutableInstruction("andi", new int[]{rs, rt, imm});
+        Instruction andi = InstructionRegistry.createForExecutor("andi", new int[]{rs, rt, imm});
         andi.execute(config);
 
         assertEquals(0xFFFF, config.getRegister(rt));
@@ -307,7 +307,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0xAAAA); // 0b1010101010101010
 
-        Instruction andi = InstructionRegistry.getExecutableInstruction("andi", new int[]{rs, rt, imm});
+        Instruction andi = InstructionRegistry.createForExecutor("andi", new int[]{rs, rt, imm});
         andi.execute(config);
 
         assertEquals(0x0A0A, config.getRegister(rt)); // 0b0000101000001010
@@ -321,7 +321,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x0);
 
-        Instruction andi = InstructionRegistry.getExecutableInstruction("andi", new int[]{rs, rt, imm});
+        Instruction andi = InstructionRegistry.createForExecutor("andi", new int[]{rs, rt, imm});
         andi.execute(config);
 
         assertEquals(0x0, config.getRegister(rt));
@@ -335,7 +335,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x12345678);
 
-        Instruction andi = InstructionRegistry.getExecutableInstruction("andi", new int[]{rs, rt, imm});
+        Instruction andi = InstructionRegistry.createForExecutor("andi", new int[]{rs, rt, imm});
         andi.execute(config);
 
         assertEquals(0x5678, config.getRegister(rt)); // Only lower 16 bits are ANDed
@@ -349,7 +349,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x12345678);
 
-        Instruction andi = InstructionRegistry.getExecutableInstruction("andi", new int[]{rs, rt, imm});
+        Instruction andi = InstructionRegistry.createForExecutor("andi", new int[]{rs, rt, imm});
         andi.execute(config);
 
         assertEquals(0x0, config.getRegister(rt));
@@ -363,7 +363,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x00000000);
 
-        Instruction ori = InstructionRegistry.getExecutableInstruction("ori", new int[]{rs, rt, imm});
+        Instruction ori = InstructionRegistry.createForExecutor("ori", new int[]{rs, rt, imm});
         ori.execute(config);
 
         assertEquals(0x1234, config.getRegister(rt));
@@ -377,7 +377,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0xFFFFFFFF);
 
-        Instruction ori = InstructionRegistry.getExecutableInstruction("ori", new int[]{rs, rt, imm});
+        Instruction ori = InstructionRegistry.createForExecutor("ori", new int[]{rs, rt, imm});
         ori.execute(config);
 
         assertEquals(0xFFFFFFFF, config.getRegister(rt));
@@ -391,7 +391,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x0F00); // 0000111100000000
 
-        Instruction ori = InstructionRegistry.getExecutableInstruction("ori", new int[]{rs, rt, imm});
+        Instruction ori = InstructionRegistry.createForExecutor("ori", new int[]{rs, rt, imm});
         ori.execute(config);
 
         assertEquals(0x0FF0, config.getRegister(rt)); // 0000111111110000
@@ -405,7 +405,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0xABCD1234);
 
-        Instruction ori = InstructionRegistry.getExecutableInstruction("ori", new int[]{rs, rt, imm});
+        Instruction ori = InstructionRegistry.createForExecutor("ori", new int[]{rs, rt, imm});
         ori.execute(config);
 
         assertEquals(0xABCD1234, config.getRegister(rt));
@@ -419,7 +419,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x12340000);
 
-        Instruction ori = InstructionRegistry.getExecutableInstruction("ori", new int[]{rs, rt, imm});
+        Instruction ori = InstructionRegistry.createForExecutor("ori", new int[]{rs, rt, imm});
         ori.execute(config);
 
         assertEquals(0x123400FF, config.getRegister(rt));
@@ -433,7 +433,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x00000000);
 
-        Instruction xori = InstructionRegistry.getExecutableInstruction("xori", new int[]{rs, rt, imm});
+        Instruction xori = InstructionRegistry.createForExecutor("xori", new int[]{rs, rt, imm});
         xori.execute(config);
 
         assertEquals(0xFFFF, config.getRegister(rt));
@@ -447,7 +447,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x00FF);
 
-        Instruction xori = InstructionRegistry.getExecutableInstruction("xori", new int[]{rs, rt, imm});
+        Instruction xori = InstructionRegistry.createForExecutor("xori", new int[]{rs, rt, imm});
         xori.execute(config);
 
         assertEquals(0x0000, config.getRegister(rt));
@@ -461,7 +461,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x00FF);
 
-        Instruction xori = InstructionRegistry.getExecutableInstruction("xori", new int[]{rs, rt, imm});
+        Instruction xori = InstructionRegistry.createForExecutor("xori", new int[]{rs, rt, imm});
         xori.execute(config);
 
         assertEquals(0xFF0, config.getRegister(rt));  // 00FF ^ 0F0F = 00F0
@@ -475,7 +475,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x12345678);
 
-        Instruction xori = InstructionRegistry.getExecutableInstruction("xori", new int[]{rs, rt, imm});
+        Instruction xori = InstructionRegistry.createForExecutor("xori", new int[]{rs, rt, imm});
         xori.execute(config);
 
         assertEquals(0x12345678, config.getRegister(rt));
@@ -489,7 +489,7 @@ class ConfigurationTest {
 
         config.setRegister(rs, 0x12340000);
 
-        Instruction xori = InstructionRegistry.getExecutableInstruction("xori", new int[]{rs, rt, imm});
+        Instruction xori = InstructionRegistry.createForExecutor("xori", new int[]{rs, rt, imm});
         xori.execute(config);
 
         assertEquals(0x1234FFFF, config.getRegister(rt));
@@ -500,7 +500,7 @@ class ConfigurationTest {
         int rt = 2;
         int imm = 0x0000;
 
-        Instruction lui = InstructionRegistry.getExecutableInstruction("lui", new int[]{0, rt, imm});
+        Instruction lui = InstructionRegistry.createForExecutor("lui", new int[]{0, rt, imm});
         lui.execute(config);
 
         assertEquals(0x00000000, config.getRegister(rt), "Register should be 0 when immediate is 0.");
@@ -511,7 +511,7 @@ class ConfigurationTest {
         int rt = 2;
         int imm = 0xFFFF;
 
-        Instruction lui = InstructionRegistry.getExecutableInstruction("lui", new int[]{0, rt, imm});
+        Instruction lui = InstructionRegistry.createForExecutor("lui", new int[]{0, rt, imm});
         lui.execute(config);
 
         assertEquals(0xFFFF0000, config.getRegister(rt), "Register should have imm in upper 16 bits.");
@@ -522,7 +522,7 @@ class ConfigurationTest {
         int rt = 2;
         int imm = 0x1234;
 
-        Instruction lui = InstructionRegistry.getExecutableInstruction("lui", new int[]{0, rt, imm});
+        Instruction lui = InstructionRegistry.createForExecutor("lui", new int[]{0, rt, imm});
         lui.execute(config);
 
         assertEquals(0x12340000, config.getRegister(rt), "Immediate should be shifted to upper 16 bits.");
@@ -535,7 +535,7 @@ class ConfigurationTest {
 
         config.setRegister(rt, 0xFFFFFFFF); // ensure value gets overwritten
 
-        Instruction lui = InstructionRegistry.getExecutableInstruction("lui", new int[]{0, rt, imm});
+        Instruction lui = InstructionRegistry.createForExecutor("lui", new int[]{0, rt, imm});
         lui.execute(config);
 
         assertEquals(0x00FF0000, config.getRegister(rt), "Register should only contain shifted immediate.");
@@ -546,7 +546,7 @@ class ConfigurationTest {
         int rt = 2;
         int imm = 0x8000;
 
-        Instruction lui = InstructionRegistry.getExecutableInstruction("lui", new int[]{0, rt, imm});
+        Instruction lui = InstructionRegistry.createForExecutor("lui", new int[]{0, rt, imm});
         lui.execute(config);
 
         assertEquals(0x80000000, config.getRegister(rt), "Should shift immediate without sign extension.");
@@ -559,7 +559,7 @@ class ConfigurationTest {
         config.setRegister(rs, -5);  // negative value, so branch taken
         config.setPC(100);
 
-        Instruction bltz = InstructionRegistry.getExecutableInstruction("bltz", new int[]{rs, 0, imm});
+        Instruction bltz = InstructionRegistry.createForExecutor("bltz", new int[]{rs, 0, imm});
         bltz.execute(config);
 
         assertEquals(108, config.getPC());
@@ -572,7 +572,7 @@ class ConfigurationTest {
         config.setRegister(rs, -5);  // negative value, so branch taken
         config.setPC(100);
 
-        Instruction bltz = InstructionRegistry.getExecutableInstruction("bltz", new int[]{rs, 0, imm});
+        Instruction bltz = InstructionRegistry.createForExecutor("bltz", new int[]{rs, 0, imm});
         bltz.execute(config);
 
         assertEquals(92, config.getPC());
@@ -585,7 +585,7 @@ class ConfigurationTest {
         config.setRegister(rs, 5);  // non-negative, branch not taken
         config.setPC(100);
 
-        Instruction bltz = InstructionRegistry.getExecutableInstruction("bltz", new int[]{rs, 0, imm});
+        Instruction bltz = InstructionRegistry.createForExecutor("bltz", new int[]{rs, 0, imm});
         bltz.execute(config);
 
         // Expected PC: 100 + 4
@@ -599,7 +599,7 @@ class ConfigurationTest {
         config.setRegister(rs, 10);
         config.setPC(100);
 
-        Instruction bgez = InstructionRegistry.getExecutableInstruction("bgez", new int[]{rs, 0, imm});
+        Instruction bgez = InstructionRegistry.createForExecutor("bgez", new int[]{rs, 0, imm});
         bgez.execute(config);
 
         assertEquals(108, config.getPC());
@@ -612,7 +612,7 @@ class ConfigurationTest {
         config.setRegister(rs, 0);
         config.setPC(100);
 
-        Instruction bltz = InstructionRegistry.getExecutableInstruction("bgez", new int[]{rs, 0, imm});
+        Instruction bltz = InstructionRegistry.createForExecutor("bgez", new int[]{rs, 0, imm});
         bltz.execute(config);
 
         assertEquals(108, config.getPC());
@@ -625,7 +625,7 @@ class ConfigurationTest {
         config.setRegister(rs, -5);
         config.setPC(100);
 
-        Instruction bltz = InstructionRegistry.getExecutableInstruction("bgez", new int[]{rs, 0, imm});
+        Instruction bltz = InstructionRegistry.createForExecutor("bgez", new int[]{rs, 0, imm});
         bltz.execute(config);
 
         // Expected PC: 100 + 4
@@ -642,7 +642,7 @@ class ConfigurationTest {
         config.setRegister(rs, 42);
         config.setRegister(rt, 42); // rs == rt, branch taken
 
-        Instruction beq = InstructionRegistry.getExecutableInstruction("beq", new int[]{rs, rt, imm});
+        Instruction beq = InstructionRegistry.createForExecutor("beq", new int[]{rs, rt, imm});
         beq.execute(config);
 
         int expectedPC = 100 + (imm << 2);
@@ -659,7 +659,7 @@ class ConfigurationTest {
         config.setRegister(rs, 42);
         config.setRegister(rt, 50); // rs != rt, branch not taken
 
-        Instruction beq = InstructionRegistry.getExecutableInstruction("beq", new int[]{rs, rt, imm});
+        Instruction beq = InstructionRegistry.createForExecutor("beq", new int[]{rs, rt, imm});
         beq.execute(config);
 
         int expectedPC = 100 + 4;
@@ -676,7 +676,7 @@ class ConfigurationTest {
         config.setRegister(rs, 42);
         config.setRegister(rt, 42);
 
-        Instruction bne = InstructionRegistry.getExecutableInstruction("bne", new int[]{rs, rt, imm});
+        Instruction bne = InstructionRegistry.createForExecutor("bne", new int[]{rs, rt, imm});
         bne.execute(config);
 
         int expectedPC = 100 + 4;
@@ -693,7 +693,7 @@ class ConfigurationTest {
         config.setRegister(rs, 42);
         config.setRegister(rt, 50);
 
-        Instruction bne = InstructionRegistry.getExecutableInstruction("bne", new int[]{rs, rt, imm});
+        Instruction bne = InstructionRegistry.createForExecutor("bne", new int[]{rs, rt, imm});
         bne.execute(config);
 
         int expectedPC = 100 + (imm << 2);
@@ -707,7 +707,7 @@ class ConfigurationTest {
         config.setRegister(rs, 10);
         config.setPC(100);
 
-        Instruction blez = InstructionRegistry.getExecutableInstruction("blez", new int[]{rs, 0, imm});
+        Instruction blez = InstructionRegistry.createForExecutor("blez", new int[]{rs, 0, imm});
         blez.execute(config);
 
         assertEquals(104, config.getPC());
@@ -720,7 +720,7 @@ class ConfigurationTest {
         config.setRegister(rs, 0);
         config.setPC(100);
 
-        Instruction blez = InstructionRegistry.getExecutableInstruction("blez", new int[]{rs, 0, imm});
+        Instruction blez = InstructionRegistry.createForExecutor("blez", new int[]{rs, 0, imm});
         blez.execute(config);
 
         int expectedPC = 100 + (imm << 2);
@@ -734,7 +734,7 @@ class ConfigurationTest {
         config.setRegister(rs, -5);
         config.setPC(100);
 
-        Instruction blez = InstructionRegistry.getExecutableInstruction("blez", new int[]{rs, 0, imm});
+        Instruction blez = InstructionRegistry.createForExecutor("blez", new int[]{rs, 0, imm});
         blez.execute(config);
 
         int expectedPC = 100 + (imm << 2);
@@ -748,7 +748,7 @@ class ConfigurationTest {
         config.setRegister(rs, 10);
         config.setPC(100);
 
-        Instruction bgtz = InstructionRegistry.getExecutableInstruction("bgtz", new int[]{rs, 0, imm});
+        Instruction bgtz = InstructionRegistry.createForExecutor("bgtz", new int[]{rs, 0, imm});
         bgtz.execute(config);
 
         int expectedPC = 100 + (imm << 2);
@@ -762,7 +762,7 @@ class ConfigurationTest {
         config.setRegister(rs, 10);
         config.setPC(100);
 
-        Instruction bgtz = InstructionRegistry.getExecutableInstruction("bgtz", new int[]{rs, 0, imm});
+        Instruction bgtz = InstructionRegistry.createForExecutor("bgtz", new int[]{rs, 0, imm});
         bgtz.execute(config);
 
         int expectedPC = 100 + (imm << 2);
@@ -776,7 +776,7 @@ class ConfigurationTest {
         config.setRegister(rs, -10);
         config.setPC(100);
 
-        Instruction bgtz = InstructionRegistry.getExecutableInstruction("bgtz", new int[]{rs, 0, imm});
+        Instruction bgtz = InstructionRegistry.createForExecutor("bgtz", new int[]{rs, 0, imm});
         bgtz.execute(config);
 
         int expectedPC = 100 + 4;
@@ -789,7 +789,7 @@ class ConfigurationTest {
         config.setPC(100);
         config.setRegister(rt, 0b0000_1000); // 8 in binary
 
-        Instruction srl = InstructionRegistry.getExecutableInstruction("srl", new int[]{0, rt, rd, sa});
+        Instruction srl = InstructionRegistry.createForExecutor("srl", new int[]{0, rt, rd, sa});
         srl.execute(config);
 
         assertEquals(1, config.getRegister(rd));
@@ -802,7 +802,7 @@ class ConfigurationTest {
         config.setPC(100);
         config.setRegister(rt, 0x12345678);
 
-        Instruction srl = InstructionRegistry.getExecutableInstruction("srl", new int[]{0, rt, rd, sa});
+        Instruction srl = InstructionRegistry.createForExecutor("srl", new int[]{0, rt, rd, sa});
         srl.execute(config);
 
         assertEquals(0x12345678, config.getRegister(rd)); // No shift
@@ -816,7 +816,7 @@ class ConfigurationTest {
         config.setRegister(rs, 5);
         config.setRegister(rt, 10);
 
-        Instruction add = InstructionRegistry.getExecutableInstruction("add", new int[]{rs, rt, rd});
+        Instruction add = InstructionRegistry.createForExecutor("add", new int[]{rs, rt, rd});
         add.execute(config);
 
         assertEquals(15, config.getRegister(rd));
@@ -830,7 +830,7 @@ class ConfigurationTest {
         config.setRegister(rs, 7);
         config.setRegister(rt, -7);
 
-        Instruction add = InstructionRegistry.getExecutableInstruction("add", new int[]{rs, rt, rd});
+        Instruction add = InstructionRegistry.createForExecutor("add", new int[]{rs, rt, rd});
         add.execute(config);
 
         assertEquals(0, config.getRegister(rd));
@@ -844,7 +844,7 @@ class ConfigurationTest {
         config.setRegister(rt, 20);
         config.setPC(100);
 
-        Instruction addu = InstructionRegistry.getExecutableInstruction("addu", new int[]{rs, rt, rd});
+        Instruction addu = InstructionRegistry.createForExecutor("addu", new int[]{rs, rt, rd});
         addu.execute(config);
 
         assertEquals(30, config.getRegister(rd));
@@ -858,7 +858,7 @@ class ConfigurationTest {
         config.setRegister(rt, 1);
         config.setPC(200);
 
-        Instruction addu = InstructionRegistry.getExecutableInstruction("addu", new int[]{rs, rt, rd});
+        Instruction addu = InstructionRegistry.createForExecutor("addu", new int[]{rs, rt, rd});
         addu.execute(config);
 
         assertEquals(Integer.MIN_VALUE, config.getRegister(rd)); // wraparound occurs
@@ -872,7 +872,7 @@ class ConfigurationTest {
         config.setRegister(rt, 5);
         config.setPC(100);
 
-        Instruction sub = InstructionRegistry.getExecutableInstruction("sub", new int[]{rs, rt, rd});
+        Instruction sub = InstructionRegistry.createForExecutor("sub", new int[]{rs, rt, rd});
         sub.execute(config);
 
         assertEquals(15, config.getRegister(rd));
@@ -886,7 +886,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(200);
 
-        Instruction sub = InstructionRegistry.getExecutableInstruction("sub", new int[]{rs, rt, rd});
+        Instruction sub = InstructionRegistry.createForExecutor("sub", new int[]{rs, rt, rd});
         sub.execute(config);
 
         assertEquals(-5, config.getRegister(rd));
@@ -900,7 +900,7 @@ class ConfigurationTest {
         config.setRegister(rt, 5);
         config.setPC(100);
 
-        Instruction subu = InstructionRegistry.getExecutableInstruction("subu", new int[]{rs, rt, rd});
+        Instruction subu = InstructionRegistry.createForExecutor("subu", new int[]{rs, rt, rd});
         subu.execute(config);
 
         assertEquals(10, config.getRegister(rd));
@@ -914,7 +914,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(200);
 
-        Instruction subu = InstructionRegistry.getExecutableInstruction("subu", new int[]{rs, rt, rd});
+        Instruction subu = InstructionRegistry.createForExecutor("subu", new int[]{rs, rt, rd});
         subu.execute(config);
 
         assertEquals(-5, config.getRegister(rd));  // still a valid int
@@ -928,7 +928,7 @@ class ConfigurationTest {
         config.setRegister(rt, 1);
         config.setPC(300);
 
-        Instruction subu = InstructionRegistry.getExecutableInstruction("subu", new int[]{rs, rt, rd});
+        Instruction subu = InstructionRegistry.createForExecutor("subu", new int[]{rs, rt, rd});
 
         assertDoesNotThrow(() -> subu.execute(config));
         assertEquals(Integer.MIN_VALUE - 1, config.getRegister(rd));
@@ -942,7 +942,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0b1010);
         config.setPC(100);
 
-        Instruction and = InstructionRegistry.getExecutableInstruction("and", new int[]{rs, rt, rd});
+        Instruction and = InstructionRegistry.createForExecutor("and", new int[]{rs, rt, rd});
         and.execute(config);
 
         assertEquals(0b1000, config.getRegister(rd));  // 0b1100 & 0b1010 = 0b1000
@@ -956,7 +956,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0);
         config.setPC(200);
 
-        Instruction and = InstructionRegistry.getExecutableInstruction("and", new int[]{rs, rt, rd});
+        Instruction and = InstructionRegistry.createForExecutor("and", new int[]{rs, rt, rd});
         and.execute(config);
 
         assertEquals(0, config.getRegister(rd));  // all bits AND 0 = 0
@@ -970,7 +970,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0xFFFFFFFF);
         config.setPC(300);
 
-        Instruction and = InstructionRegistry.getExecutableInstruction("and", new int[]{rs, rt, rd});
+        Instruction and = InstructionRegistry.createForExecutor("and", new int[]{rs, rt, rd});
         and.execute(config);
 
         assertEquals(0xFFFFFFFF, config.getRegister(rd));  // all bits AND all bits = all bits
@@ -984,7 +984,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0b1010);
         config.setPC(100);
 
-        Instruction or = InstructionRegistry.getExecutableInstruction("or", new int[]{rs, rt, rd});
+        Instruction or = InstructionRegistry.createForExecutor("or", new int[]{rs, rt, rd});
         or.execute(config);
 
         assertEquals(0b1110, config.getRegister(rd));  // 0b1100 | 0b1010 = 0b1110
@@ -998,7 +998,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0xFFFFFFFF);
         config.setPC(200);
 
-        Instruction or = InstructionRegistry.getExecutableInstruction("or", new int[]{rs, rt, rd});
+        Instruction or = InstructionRegistry.createForExecutor("or", new int[]{rs, rt, rd});
         or.execute(config);
 
         assertEquals(0xFFFFFFFF, config.getRegister(rd));  // 0 | all bits = all bits
@@ -1012,7 +1012,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0);
         config.setPC(300);
 
-        Instruction or = InstructionRegistry.getExecutableInstruction("or", new int[]{rs, rt, rd});
+        Instruction or = InstructionRegistry.createForExecutor("or", new int[]{rs, rt, rd});
         or.execute(config);
 
         assertEquals(0, config.getRegister(rd));
@@ -1026,7 +1026,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0b1010);    // 10
         config.setPC(100);
 
-        Instruction xor = InstructionRegistry.getExecutableInstruction("xor", new int[]{rs, rt, rd});
+        Instruction xor = InstructionRegistry.createForExecutor("xor", new int[]{rs, rt, rd});
         xor.execute(config);
 
         assertEquals(0b0110, config.getRegister(rd));  // 12 ^ 10 = 6
@@ -1040,7 +1040,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0b1111_0000);
         config.setPC(200);
 
-        Instruction xor = InstructionRegistry.getExecutableInstruction("xor", new int[]{rs, rt, rd});
+        Instruction xor = InstructionRegistry.createForExecutor("xor", new int[]{rs, rt, rd});
         xor.execute(config);
 
         assertEquals(0, config.getRegister(rd));  // x ^ x = 0
@@ -1054,7 +1054,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0);
         config.setPC(300);
 
-        Instruction xor = InstructionRegistry.getExecutableInstruction("xor", new int[]{rs, rt, rd});
+        Instruction xor = InstructionRegistry.createForExecutor("xor", new int[]{rs, rt, rd});
         xor.execute(config);
 
         assertEquals(0b10101010, config.getRegister(rd));  // x ^ 0 = x
@@ -1069,7 +1069,7 @@ class ConfigurationTest {
         config.setRegister(rt, 0b1100);
         config.setRegister(rd, 0);
 
-        Instruction nor = InstructionRegistry.getExecutableInstruction("nor", new int[]{rs, rt, rd});
+        Instruction nor = InstructionRegistry.createForExecutor("nor", new int[]{rs, rt, rd});
         nor.execute(config);
 
         int expected = ~(0b1010 | 0b1100);
@@ -1086,7 +1086,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(100);
 
-        Instruction slt = InstructionRegistry.getExecutableInstruction("slt", new int[]{rs, rt, rd});
+        Instruction slt = InstructionRegistry.createForExecutor("slt", new int[]{rs, rt, rd});
         slt.execute(config);
 
         assertEquals(1, config.getRegister(rd));
@@ -1102,7 +1102,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(100);
 
-        Instruction slt = InstructionRegistry.getExecutableInstruction("slt", new int[]{rs, rt, rd});
+        Instruction slt = InstructionRegistry.createForExecutor("slt", new int[]{rs, rt, rd});
         slt.execute(config);
 
         assertEquals(0, config.getRegister(rd));
@@ -1118,7 +1118,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(100);
 
-        Instruction slt = InstructionRegistry.getExecutableInstruction("slt", new int[]{rs, rt, rd});
+        Instruction slt = InstructionRegistry.createForExecutor("slt", new int[]{rs, rt, rd});
         slt.execute(config);
 
         assertEquals(0, config.getRegister(rd));
@@ -1134,7 +1134,7 @@ class ConfigurationTest {
         config.setRegister(rt, 3);
         config.setPC(100);
 
-        Instruction slt = InstructionRegistry.getExecutableInstruction("slt", new int[]{rs, rt, rd});
+        Instruction slt = InstructionRegistry.createForExecutor("slt", new int[]{rs, rt, rd});
         slt.execute(config);
 
         assertEquals(1, config.getRegister(rd));
@@ -1150,7 +1150,7 @@ class ConfigurationTest {
         config.setRegister(rt, -3);
         config.setPC(100);
 
-        Instruction slt = InstructionRegistry.getExecutableInstruction("slt", new int[]{rs, rt, rd});
+        Instruction slt = InstructionRegistry.createForExecutor("slt", new int[]{rs, rt, rd});
         slt.execute(config);
 
         assertEquals(0, config.getRegister(rd));
@@ -1166,7 +1166,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(100);
 
-        Instruction sltu = InstructionRegistry.getExecutableInstruction("sltu", new int[]{rs, rt, rd});
+        Instruction sltu = InstructionRegistry.createForExecutor("sltu", new int[]{rs, rt, rd});
         sltu.execute(config);
 
         assertEquals(1, config.getRegister(rd));
@@ -1182,7 +1182,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(100);
 
-        Instruction sltu = InstructionRegistry.getExecutableInstruction("sltu", new int[]{rs, rt, rd});
+        Instruction sltu = InstructionRegistry.createForExecutor("sltu", new int[]{rs, rt, rd});
         sltu.execute(config);
 
         assertEquals(0, config.getRegister(rd));
@@ -1198,7 +1198,7 @@ class ConfigurationTest {
         config.setRegister(rt, 10);
         config.setPC(100);
 
-        Instruction sltu = InstructionRegistry.getExecutableInstruction("sltu", new int[]{rs, rt, rd});
+        Instruction sltu = InstructionRegistry.createForExecutor("sltu", new int[]{rs, rt, rd});
         sltu.execute(config);
 
         assertEquals(0, config.getRegister(rd));
@@ -1214,7 +1214,7 @@ class ConfigurationTest {
         config.setRegister(rt, 3);    // 3 unsigned
         config.setPC(100);
 
-        Instruction sltu = InstructionRegistry.getExecutableInstruction("sltu", new int[]{rs, rt, rd});
+        Instruction sltu = InstructionRegistry.createForExecutor("sltu", new int[]{rs, rt, rd});
         sltu.execute(config);
 
         // unsigned -5 (0xFFFFFFFB) > 3, so result should be 0
@@ -1231,7 +1231,7 @@ class ConfigurationTest {
         config.setRegister(rt, -3);   // 0xFFFFFFFD unsigned is large number
         config.setPC(100);
 
-        Instruction sltu = InstructionRegistry.getExecutableInstruction("sltu", new int[]{rs, rt, rd});
+        Instruction sltu = InstructionRegistry.createForExecutor("sltu", new int[]{rs, rt, rd});
         sltu.execute(config);
 
         // 5 unsigned < 0xFFFFFFFD unsigned, so result should be 1
@@ -1246,7 +1246,7 @@ class ConfigurationTest {
         config.setRegister(rs, jumpAddress);
         config.setPC(100);
 
-        Instruction jr = InstructionRegistry.getExecutableInstruction("jr", new int[]{rs});
+        Instruction jr = InstructionRegistry.createForExecutor("jr", new int[]{rs});
         jr.execute(config);
 
         assertEquals(jumpAddress, config.getPC());
@@ -1258,7 +1258,7 @@ class ConfigurationTest {
         config.setRegister(rs, 0);
         config.setPC(100);
 
-        Instruction jr = InstructionRegistry.getExecutableInstruction("jr", new int[]{0, rs});
+        Instruction jr = InstructionRegistry.createForExecutor("jr", new int[]{0, rs});
         jr.execute(config);
 
         assertEquals(0, config.getPC());
@@ -1274,7 +1274,7 @@ class ConfigurationTest {
         config.setRegister(rs, jumpAddress);
         config.setPC(currentPC);
 
-        Instruction jalr = InstructionRegistry.getExecutableInstruction("jalr", new int[]{rs, rt, rd});
+        Instruction jalr = InstructionRegistry.createForExecutor("jalr", new int[]{rs, rt, rd});
         jalr.execute(config);
 
         assertEquals(currentPC + 4, config.getRegister(rd));
@@ -1290,7 +1290,7 @@ class ConfigurationTest {
         config.setRegister(rs, 0);
         config.setPC(currentPC);
 
-        Instruction jalr = InstructionRegistry.getExecutableInstruction("jalr", new int[]{rs, rt, rd});
+        Instruction jalr = InstructionRegistry.createForExecutor("jalr", new int[]{rs, rt, rd});
         jalr.execute(config);
 
         assertEquals(currentPC + 4, config.getRegister(rd));
@@ -1304,7 +1304,7 @@ class ConfigurationTest {
         int iindex = 0x03FFFFFF;
 
 
-        Instruction j = InstructionRegistry.getExecutableInstruction("j", new int[]{iindex});
+        Instruction j = InstructionRegistry.createForExecutor("j", new int[]{iindex});
         j.execute(config);
 
         long expectedPC = initialPC + iindex;
@@ -1317,7 +1317,7 @@ class ConfigurationTest {
         config.setPC(initialPC);
         int iindex = 0x0003FFFF;
 
-        Instruction jal = InstructionRegistry.getExecutableInstruction("jal", new int[]{iindex});
+        Instruction jal = InstructionRegistry.createForExecutor("jal", new int[]{iindex});
         jal.execute(config);
 
         long pcPlus4 = initialPC + 4;

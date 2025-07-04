@@ -1,4 +1,4 @@
-package com.wars.engine.exception;
+package com.wars.engine.exception.assembler;
 
 public class AssemblerException extends RuntimeException {
     public AssemblerException(String message) {

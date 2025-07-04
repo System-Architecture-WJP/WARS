@@ -1,6 +1,6 @@
 package com.wars.engine.simulator;
 
-import com.wars.engine.exception.SimulatorException;
+import com.wars.engine.exception.simulator.UnknownOpcodeException;
 
 class MnemonicUtils {
     public static String getMnemonicForIType(int opcode, int rt) {
@@ -30,7 +30,7 @@ class MnemonicUtils {
             case 0b000110 -> "blez";
             case 0b000111 -> "bgtz";
 
-            default -> throw new SimulatorException("Unknown I-type opcode: " + opcode);
+            default -> throw new UnknownOpcodeException("Unknown I-type opcode: " + opcode);
         };
     }
 
@@ -55,7 +55,7 @@ class MnemonicUtils {
                 case 0b001000 -> "jr";
                 case 0b001001 -> "jalr";
                 case 0b001100 -> "sysc";
-                default -> throw new SimulatorException("Unknown R-type function code: " + fun);
+                default -> throw new UnknownOpcodeException("Unknown R-type function code: " + fun);
             };
         }
 
@@ -64,11 +64,11 @@ class MnemonicUtils {
                 case 0b10000 -> "eret";
                 case 0b00100 -> "movg2s";
                 case 0b00000 -> "mov2gs";
-                default -> throw new SimulatorException("Unknown R-type function code for opcode 010000: " + fun);
+                default -> throw new UnknownOpcodeException("Unknown R-type function code for opcode 010000: " + fun);
             };
         }
 
-        throw new SimulatorException("Unknown R-type opcode: " + opcode);
+        throw new UnknownOpcodeException("Unknown R-type opcode: " + opcode);
     }
 
     public static String getMnemonicForJType(int opcode) {
@@ -80,6 +80,6 @@ class MnemonicUtils {
             return "jal";
         }
 
-        throw new SimulatorException("Unknown J-type opcode: " + opcode);
+        throw new UnknownOpcodeException("Unknown J-type opcode: " + opcode);
     }
 }

@@ -1,6 +1,9 @@
 package com.wars.engine.macro;
 
-import com.wars.engine.exception.AssemblerException;
+import com.wars.engine.exception.assembler.macro.InvalidMacroDefinitionException;
+import com.wars.engine.exception.assembler.macro.InvalidMacroTypeException;
+import com.wars.engine.exception.assembler.macro.MacroReservedRegisterException;
+import com.wars.engine.exception.assembler.macro.MacroStoreFormatException;
 import com.wars.engine.operand.OperandParser;
 import com.wars.engine.instruction.Instruction;
 import com.wars.engine.instruction.InstructionRegistry;
@@ -15,154 +18,145 @@ public class Macro {
         String[] split = line.split("[\\s(),]+");
         
         if (split.length < 2) {
-            throw new AssemblerException("Invalid macro definition: " + line);
+            throw new InvalidMacroDefinitionException(line);
         }
         
-        String macroType = split[1]; 
+        String macroType = split[1];
 
-        if (macroType.equals("gpr")){
+        switch (macroType) {
+            case "gpr" -> {
 
-            int reg = OperandParser.parseUnsigned(split[2], 5);
-            String s = split[4];
-            if (s.equals("enc")){ 
-            
-                String val = split[5];
-                String type = split[6];
+                int reg = OperandParser.parseUnsigned(split[2], 5);
+                String s = split[4];
+                if (s.equals("enc")) {
 
-                return enc(reg, val, type);
+                    String val = split[5];
+                    String type = split[6];
+
+                    return enc(reg, val, type);
+                }
+
+                return store(reg, s);
+
             }
+            case "divt" -> {
 
-            return store(reg, s);
+                if (split.length != 5) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-        }
+                int k = OperandParser.parseUnsigned(split[2], 5);
+                int i = OperandParser.parseUnsigned(split[3], 5);
+                int j = OperandParser.parseUnsigned(split[4], 5);
 
-        else if (macroType.equals("divt")){
-            
-            if (split.length != 5){
-                throw new AssemblerException("Invalid macro definition: " + line); 
+                return divt(k, i, j);
             }
-            
-            int k = OperandParser.parseUnsigned(split[2], 5);
-            int i = OperandParser.parseUnsigned(split[3], 5);
-            int j = OperandParser.parseUnsigned(split[4], 5);
+            case "divu" -> {
 
-            return divt(k, i, j);
-        }
-        else if (macroType.equals("divu")){
+                if (split.length != 5) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-            if (split.length != 5){
-                throw new AssemblerException("Invalid macro definition: " + line); 
+                int k = OperandParser.parseUnsigned(split[2], 5);
+                int i = OperandParser.parseUnsigned(split[3], 5);
+                int j = OperandParser.parseUnsigned(split[4], 5);
+
+
+                return divu(k, i, j);
             }
+            case "mul" -> {
 
-            int k = OperandParser.parseUnsigned(split[2], 5);
-            int i = OperandParser.parseUnsigned(split[3], 5);
-            int j = OperandParser.parseUnsigned(split[4], 5);
+                if (split.length != 5) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-            
-            return divu(k, i, j); 
-        }
-        else if (macroType.equals("mul")){
+                int k = OperandParser.parseUnsigned(split[2], 5);
+                int i = OperandParser.parseUnsigned(split[3], 5);
+                int j = OperandParser.parseUnsigned(split[4], 5);
 
-            if (split.length != 5) {
-                throw new AssemblerException("Invalid macro definition: " + line);
+                return mul(k, i, j);
+
             }
+            case "zero" -> {
 
-            int k = OperandParser.parseUnsigned(split[2], 5);
-            int i = OperandParser.parseUnsigned(split[3], 5);
-            int j = OperandParser.parseUnsigned(split[4], 5);
+                if (split.length != 4) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-            return mul(k, i, j);
-         
-        }
-        else if (macroType.equals("zero")){
-            
-            if (split.length != 4) {
-                throw new AssemblerException("Invalid macro definition: " + line);
+                int i = OperandParser.parseUnsigned(split[2], 5);
+                int j = OperandParser.parseUnsigned(split[3], 5);
+
+                return zero(i, j);
+
             }
+            case "store" -> {
 
-            int i = OperandParser.parseUnsigned(split[2], 5);
-            int j = OperandParser.parseUnsigned(split[3], 5); 
+                if (split.length != 4) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-            return zero(i, j);
-        
-        }
-        else if (macroType.equals("store")){
+                int reg = OperandParser.parseUnsigned(split[2], 5);
+                String val = split[3];
 
-            if (split.length != 4) {
-                throw new AssemblerException("Invalid macro definition: " + line);
+                return storeInt(reg, val);
+
             }
+            case "ssave" -> {
 
-            int reg = OperandParser.parseUnsigned(split[2], 5);
-            String val = split[3];
+                if (split.length != 3) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-            return storeInt(reg, val);
+                int r = OperandParser.parseUnsigned(split[2], 5);
 
-        }
-        else if (macroType.equals("ssave")){
-
-            if (split.length != 3) {
-                throw new AssemblerException("Invalid macro definition: " + line);
+                return ssave(r, (1 << 10));
             }
+            case "srestore" -> {
 
-            int r = OperandParser.parseUnsigned(split[2], 5);
+                if (split.length != 3) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-            return ssave(r, (1 << 10));
-        }
-        else if (macroType.equals("srestore")){
+                int r = OperandParser.parseUnsigned(split[2], 5);
 
-            if (split.length != 3) {
-                throw new AssemblerException("Invalid macro definition: " + line);
+                return srestore(r, (1 << 10));
             }
-            
-            int r = OperandParser.parseUnsigned(split[2], 5);
+            case "restore-user" -> {
+                if (split.length != 2) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
 
-            return srestore(r, (1 << 10));
-        }
-        else if (macroType.equals("restore-user")){
-            if (split.length != 2){
-                throw new AssemblerException("Invalid macro definition: " + line);
+                return restoreUser((1 << 10));
             }
-            
-            return restoreUser((1 << 10));
-        }
-        else if (macroType.equals("save-user")){
-            if (split.length != 2){
-                throw new AssemblerException("Invalid macro definition: " + line);
+            case "save-user" -> {
+                if (split.length != 2) {
+                    throw new InvalidMacroDefinitionException(line);
+                }
+                return saveUser((1 << 10));
             }
-            return saveUser((1 << 10));
-        }
-        else {
-            throw new AssemblerException("Invalid macro type: " + macroType);
+            default -> throw new InvalidMacroTypeException(macroType);
         }
 
     }
 
     private static List<Instruction> enc(int reg, String val, String type){
-        if (type.equals("int")){
-            return storeInt(reg, val);
-        }
-        else if (type.equals("uint")){
-            return storeUnsignedInt(reg, val);
-        }
-        else if (type.equals("bool")){
-            return storeBool(reg, val);
-        }
-        else if (type.equals("char")){
-            return storeChar(reg, val);
-        }
-        else {
-            throw new AssemblerException("Invalid macro type: " + type); 
-        }
+        return switch (type) {
+            case "int" -> storeInt(reg, val);
+            case "uint" -> storeUnsignedInt(reg, val);
+            case "bool" -> storeBool(reg, val);
+            case "char" -> storeChar(reg, val);
+            default -> throw new InvalidMacroTypeException(type);
+        };
         
     }
 
     private static List<Instruction> zero(int i, int j){
         List<Instruction> instructions = new LinkedList<>();
         
-        instructions.add(InstructionRegistry.create("sw",   new int[]{0, i, 0}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{i, i, 4}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{j, j, -1}));
-        instructions.add(InstructionRegistry.create("bne",  new int[]{0, j, -3})); // j instead i
+        instructions.add(InstructionRegistry.createForEncoder("sw",   new int[]{0, i, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{i, i, 4}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{j, j, -1}));
+        instructions.add(InstructionRegistry.createForEncoder("bne",  new int[]{0, j, -3})); // j instead i
         
         return instructions;
     }
@@ -171,16 +165,16 @@ public class Macro {
 
         List<Instruction> instructions = new LinkedList<>();
 
-        instructions.add(InstructionRegistry.create("addi", new int[]{24, 0, 1}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{26, i, 0}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{27, 0, 0}));
-        instructions.add(InstructionRegistry.create("and",  new int[]{25, j, 24}));
-        instructions.add(InstructionRegistry.create("beq",  new int[]{25, 0, 2}));
-        instructions.add(InstructionRegistry.create("add",  new int[]{27, 27, 26}));
-        instructions.add(InstructionRegistry.create("add",  new int[]{24, 24, 24}));
-        instructions.add(InstructionRegistry.create("add",  new int[]{26, 26, 26}));
-        instructions.add(InstructionRegistry.create("bne",  new int[]{24, 0, -5}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{k, 27, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{24, 0, 1}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{26, i, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{27, 0, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("and",  new int[]{25, j, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("beq",  new int[]{25, 0, 2}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{27, 27, 26}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{24, 24, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{26, 26, 26}));
+        instructions.add(InstructionRegistry.createForEncoder("bne",  new int[]{24, 0, -5}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{k, 27, 0}));
 
         return instructions;
         
@@ -191,41 +185,41 @@ public class Macro {
 
         List<Instruction> instructions = new LinkedList<>();
 
-        instructions.add(InstructionRegistry.create("add",  new int[]{k, 0, 0}));
-        instructions.add(InstructionRegistry.create("sltu", new int[]{23, i, j}));
-        instructions.add(InstructionRegistry.create("bgtz", new int[]{23, 30})); // size increased, as number of instructions increases
-        instructions.add(InstructionRegistry.create("add",  new int[]{23, i, 0}));
-        instructions.add(InstructionRegistry.create("add",  new int[]{24, j, 0}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{25, 0, 1}));
-        instructions.add(InstructionRegistry.create("add",  new int[]{26, 0, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{k, 0, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("sltu", new int[]{23, i, j}));
+        instructions.add(InstructionRegistry.createForEncoder("bgtz", new int[]{23, 30})); // size increased, as number of instructions increases
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{23, i, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{24, j, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{25, 0, 1}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{26, 0, 0}));
 
-        store(21, "1" + "0".repeat(31)).forEach(instructions::add);
+        instructions.addAll(store(21, "1" + "0".repeat(31)));
 
-        instructions.add(InstructionRegistry.create("and",  new int[]{22, 24, 21}));
-        instructions.add(InstructionRegistry.create("bltz", new int[]{22, 5})); // gpr 22 stores, b[31]0^31, b[31] = 1 <-> gpr(22) < 0
-        instructions.add(InstructionRegistry.create("add",  new int[]{25, 25, 25}));
-        instructions.add(InstructionRegistry.create("add",  new int[]{24, 24, 24}));
-        instructions.add(InstructionRegistry.create("sltu", new int[]{27, 23, 24}));
-        instructions.add(InstructionRegistry.create("blez", new int[]{27, -5}));
+        instructions.add(InstructionRegistry.createForEncoder("and",  new int[]{22, 24, 21}));
+        instructions.add(InstructionRegistry.createForEncoder("bltz", new int[]{22, 5})); // gpr 22 stores, b[31]0^31, b[31] = 1 <-> gpr(22) < 0
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{25, 25, 25}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{24, 24, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("sltu", new int[]{27, 23, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("blez", new int[]{27, -5}));
 
-        instructions.add(InstructionRegistry.create("addi", new int[]{24, 24, -1}));
-        instructions.add(InstructionRegistry.create("sltu", new int[]{22, 24, 23}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{24, 24, 1}));
-        instructions.add(InstructionRegistry.create("blez", new int[]{22, 3}));
-        instructions.add(InstructionRegistry.create("or",   new int[]{26, 26, 25}));
-        instructions.add(InstructionRegistry.create("sub",  new int[]{23, 23, 24}));
-        instructions.add(InstructionRegistry.create("sltu", new int[]{27, 23, 24}));
-        instructions.add(InstructionRegistry.create("blez", new int[]{27, 9}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{24, 24, -1}));
+        instructions.add(InstructionRegistry.createForEncoder("sltu", new int[]{22, 24, 23}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{24, 24, 1}));
+        instructions.add(InstructionRegistry.createForEncoder("blez", new int[]{22, 3}));
+        instructions.add(InstructionRegistry.createForEncoder("or",   new int[]{26, 26, 25}));
+        instructions.add(InstructionRegistry.createForEncoder("sub",  new int[]{23, 23, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("sltu", new int[]{27, 23, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("blez", new int[]{27, 9}));
 
-        instructions.add(InstructionRegistry.create("srl",  new int[]{25, 25, 1}));
-        instructions.add(InstructionRegistry.create("srl",  new int[]{24, 24, 1}));
-        instructions.add(InstructionRegistry.create("sltu", new int[]{27, 23, 24}));
-        instructions.add(InstructionRegistry.create("bgtz", new int[]{27, -3}));
-        instructions.add(InstructionRegistry.create("or",   new int[]{26, 26, 25}));
-        instructions.add(InstructionRegistry.create("sub",  new int[]{23, 23, 24}));
-        instructions.add(InstructionRegistry.create("sltu", new int[]{22, 23, j})); // 22 instead of 27, otherwise won't finish B = A
-        instructions.add(InstructionRegistry.create("blez", new int[]{22, -23})); // size increased, as number of instructions increases
-        instructions.add(InstructionRegistry.create("add",  new int[]{k, 26, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("srl",  new int[]{25, 25, 1}));
+        instructions.add(InstructionRegistry.createForEncoder("srl",  new int[]{24, 24, 1}));
+        instructions.add(InstructionRegistry.createForEncoder("sltu", new int[]{27, 23, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("bgtz", new int[]{27, -3}));
+        instructions.add(InstructionRegistry.createForEncoder("or",   new int[]{26, 26, 25}));
+        instructions.add(InstructionRegistry.createForEncoder("sub",  new int[]{23, 23, 24}));
+        instructions.add(InstructionRegistry.createForEncoder("sltu", new int[]{22, 23, j})); // 22 instead of 27, otherwise won't finish B = A
+        instructions.add(InstructionRegistry.createForEncoder("blez", new int[]{22, -23})); // size increased, as number of instructions increases
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{k, 26, 0}));
         
         return instructions;
         
@@ -233,27 +227,25 @@ public class Macro {
 
     private static List<Instruction> divt(int k, int i, int j){
 
-        List<Instruction> instructions = new LinkedList<>(); 
+        List<Instruction> instructions = new LinkedList<>(store(21, "1" + "0".repeat(31)));
 
-        store(21, "1" + "0".repeat(31)).forEach(instructions::add);
+        instructions.add(InstructionRegistry.createForEncoder("bne",  new int[]{21, i, 5}));
+        instructions.add(InstructionRegistry.createForEncoder("nor",  new int[]{21, 0, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("bne",  new int[]{21, j, 3}));
+        instructions.add(InstructionRegistry.createForEncoder("add",  new int[]{k, i, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("beq",  new int[]{0, 0, 52}));
 
-        instructions.add(InstructionRegistry.create("bne",  new int[]{21, i, 5}));
-        instructions.add(InstructionRegistry.create("nor",  new int[]{21, 0, 0}));
-        instructions.add(InstructionRegistry.create("bne",  new int[]{21, j, 3}));
-        instructions.add(InstructionRegistry.create("add",  new int[]{k, i, 0}));
-        instructions.add(InstructionRegistry.create("beq",  new int[]{0, 0, 52}));
-        
-        signAndAbs(21, 19, i).forEach(instructions::add); // avoid overwriting in i
-        signAndAbs(22, 18, j).forEach(instructions::add); // avoid overwriting in j
-        
-        instructions.add(InstructionRegistry.create("xor",  new int[]{20, 21, 22}));
+        instructions.addAll(signAndAbs(21, 19, i)); // avoid overwriting in i
+        instructions.addAll(signAndAbs(22, 18, j)); // avoid overwriting in j
 
-        divu(k, 19, 18).forEach(instructions::add);
+        instructions.add(InstructionRegistry.createForEncoder("xor",  new int[]{20, 21, 22}));
 
-        instructions.add(InstructionRegistry.create("blez", new int[]{20, 4}));
-        instructions.add(InstructionRegistry.create("nor", new int[]{22, 0, 0}));
-        instructions.add(InstructionRegistry.create("xor", new int[]{k, k, 22}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{k, k, 1}));
+        instructions.addAll(divu(k, 19, 18));
+
+        instructions.add(InstructionRegistry.createForEncoder("blez", new int[]{20, 4}));
+        instructions.add(InstructionRegistry.createForEncoder("nor", new int[]{22, 0, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("xor", new int[]{k, k, 22}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{k, k, 1}));
 
 
 
@@ -264,13 +256,13 @@ public class Macro {
 
         List<Instruction> instructions = new LinkedList<>();
 
-        instructions.add(InstructionRegistry.create("slti", new int[]{j, i, 0}));
-        instructions.add(InstructionRegistry.create("blez", new int[]{j, 5}));
-        instructions.add(InstructionRegistry.create("nor",  new int[]{k, 0, 0}));
-        instructions.add(InstructionRegistry.create("xor",  new int[]{k, k, i}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{k, k, 1}));
-        instructions.add(InstructionRegistry.create("blez", new int[]{0, 2}));
-        instructions.add(InstructionRegistry.create("addi", new int[]{k, i, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("slti", new int[]{j, i, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("blez", new int[]{j, 5}));
+        instructions.add(InstructionRegistry.createForEncoder("nor",  new int[]{k, 0, 0}));
+        instructions.add(InstructionRegistry.createForEncoder("xor",  new int[]{k, k, i}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{k, k, 1}));
+        instructions.add(InstructionRegistry.createForEncoder("blez", new int[]{0, 2}));
+        instructions.add(InstructionRegistry.createForEncoder("addi", new int[]{k, i, 0}));
 
         return instructions;
     }
@@ -279,7 +271,7 @@ public class Macro {
         
         List<Instruction> instructions = new LinkedList<>(); 
 
-        instructions.add(InstructionRegistry.create("sw", new int[]{r, 0, 4 * k + 8 + 4 * r}));
+        instructions.add(InstructionRegistry.createForEncoder("sw", new int[]{r, 0, 4 * k + 8 + 4 * r}));
 
         return instructions; 
     }
@@ -289,10 +281,10 @@ public class Macro {
         List<Instruction> instructions = new LinkedList<>();
 
         if (r == 0){
-            throw new AssemblerException("Cannot load into register 0"); 
+            throw new MacroReservedRegisterException("r0");
         }
 
-        instructions.add(InstructionRegistry.create("lw", new int[]{r, 0, 4 * k + 8 + 4 * r }));
+        instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{r, 0, 4 * k + 8 + 4 * r }));
 
         return instructions;
     }
@@ -300,26 +292,26 @@ public class Macro {
     private static List<Instruction> restoreUser(int k){
 
         List<Instruction> instructions = new LinkedList<>();
-        instructions.add(InstructionRegistry.create("sw", new int[]{1, 0, 4 * k + 4}));
-        instructions.add(InstructionRegistry.create("lw", new int[]{1, 0, 4 * k}));
+        instructions.add(InstructionRegistry.createForEncoder("sw", new int[]{1, 0, 4 * k + 4}));
+        instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{1, 0, 4 * k}));
         
         for (int i = 28; i <= 30; i++){
-            instructions.add(InstructionRegistry.create("sw", new int[]{i, 1, 4 * i}));
+            instructions.add(InstructionRegistry.createForEncoder("sw", new int[]{i, 1, 4 * i}));
         }
 
-        instructions.add(InstructionRegistry.create("lw", new int[]{1, 0, 4 * k + 4}));
+        instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{1, 0, 4 * k + 4}));
         for(int i = 1; i <= 6; i++){
             if (i != 2 && i != 4){
-                instructions.add(InstructionRegistry.create("lw", new int[]{2, 1, 4 * (32 + i)}));
-                instructions.add(InstructionRegistry.create("movg2s", new int[]{i, 2}));
+                instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{2, 1, 4 * (32 + i)}));
+                instructions.add(InstructionRegistry.createForEncoder("movg2s", new int[]{i, 2}));
             }
         }
 
         for (int i = 31; i >= 1; i--){
-            instructions.add(InstructionRegistry.create("lw", new int[]{i, 1, 4 * i}));
+            instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{i, 1, 4 * i}));
         }
 
-        instructions.add(InstructionRegistry.create("eret", new int[]{}));
+        instructions.add(InstructionRegistry.createForEncoder("eret", new int[]{}));
 
         return instructions; 
     }
@@ -328,24 +320,24 @@ public class Macro {
 
         List<Instruction> instructions = new LinkedList<>(); 
 
-        instructions.add(InstructionRegistry.create("lw", new int[]{1, 0, 4 * k + 4}));
+        instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{1, 0, 4 * k + 4}));
         for(int i = 2; i <= 31; i++){
-            instructions.add(InstructionRegistry.create("sw", new int[]{i, 1, 4 * i}));
+            instructions.add(InstructionRegistry.createForEncoder("sw", new int[]{i, 1, 4 * i}));
         }
 
-        instructions.add(InstructionRegistry.create("add", new int[]{2, 0, 1}));
-        srestore(1, k).forEach(instructions::add);
-        instructions.add(InstructionRegistry.create("sw", new int[]{1, 2, 4}));
+        instructions.add(InstructionRegistry.createForEncoder("add", new int[]{2, 0, 1}));
+        instructions.addAll(srestore(1, k));
+        instructions.add(InstructionRegistry.createForEncoder("sw", new int[]{1, 2, 4}));
 
         for (int i = 1; i <= 4; i++){
-            instructions.add(InstructionRegistry.create("movs2g", new int[]{i, 1}));
-            instructions.add(InstructionRegistry.create("sw", new int[]{1, 2, 4 * (32 + i)}));
+            instructions.add(InstructionRegistry.createForEncoder("movs2g", new int[]{i, 1}));
+            instructions.add(InstructionRegistry.createForEncoder("sw", new int[]{1, 2, 4 * (32 + i)}));
         }
 
-        instructions.add(InstructionRegistry.create("lw", new int[]{1, 0, 4 * k}));
+        instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{1, 0, 4 * k}));
         
         for (int i = 28; i <= 30; i++){
-            instructions.add(InstructionRegistry.create("lw", new int[]{i, 1, 4 * i}));
+            instructions.add(InstructionRegistry.createForEncoder("lw", new int[]{i, 1, 4 * i}));
         }
 
         return instructions; 
@@ -356,8 +348,8 @@ public class Macro {
         
         List<Instruction> instructions = new LinkedList<>();
 
-        instructions.add(InstructionRegistry.create("lui", new int[]{reg, intVal >> 16}));
-        instructions.add(InstructionRegistry.create("ori", new int[]{reg, reg, intVal & 0xFFFF}));
+        instructions.add(InstructionRegistry.createForEncoder("lui", new int[]{reg, intVal >> 16}));
+        instructions.add(InstructionRegistry.createForEncoder("ori", new int[]{reg, reg, intVal & 0xFFFF}));
 
         return instructions;
     }
@@ -366,7 +358,7 @@ public class Macro {
 
         long longVal = Long.parseLong(val);
         if (longVal > (1L << 32) - 1L || longVal < 0){
-            throw new AssemblerException("Unsigned Integer out of bounds: " + val);
+            throw new MacroStoreFormatException("Unsigned Integer out of bounds: " + val);
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 32; i++) {
@@ -385,18 +377,18 @@ public class Macro {
             return store(reg, "0");
         }
         else {
-            throw new AssemblerException("Invalid boolean value: " + val);
+            throw new MacroStoreFormatException("Invalid boolean value: " + val);
         }
 
     }
 
     private static List<Instruction> storeChar(int reg, String val){
         if (val.length() != 1){
-            throw new AssemblerException("Invalid char value: " + val);
+            throw new MacroStoreFormatException("Invalid char value: " + val);
         }
         List<Instruction> instructions = new LinkedList<>();
-        instructions.add(InstructionRegistry.create("lui", new int[]{reg, (int) val.charAt(0) >> 16}));
-        instructions.add(InstructionRegistry.create("ori", new int[]{reg, reg, (int) val.charAt(0) & 0xFFFF}));
+        instructions.add(InstructionRegistry.createForEncoder("lui", new int[]{reg, (int) val.charAt(0) >> 16}));
+        instructions.add(InstructionRegistry.createForEncoder("ori", new int[]{reg, reg, (int) val.charAt(0) & 0xFFFF}));
 
         return instructions; 
     }
@@ -404,7 +396,7 @@ public class Macro {
     private static List<Instruction> store(int reg, String s){
         
         if (s.length() > 32) {
-            throw new AssemblerException("String must be 32 bits long");
+            throw new MacroStoreFormatException("String must be 32 bits long");
         }
 
         if (s.length() < 32){
@@ -417,14 +409,14 @@ public class Macro {
         
         for (char c : s.toCharArray()){
             if (c != '1' && c != '0'){
-                throw new AssemblerException("String must be binary " + s);
+                throw new MacroStoreFormatException("String must be binary " + s);
             }
         }
 
         List<Instruction> instructions = new LinkedList<>();
 
-        instructions.add(InstructionRegistry.create("lui", new int[]{reg, TwosComplement(s.substring(0, 16))}));
-        instructions.add(InstructionRegistry.create("ori", new int[]{reg, reg, TwosComplement(s.substring(16, 32))}));
+        instructions.add(InstructionRegistry.createForEncoder("lui", new int[]{reg, TwosComplement(s.substring(0, 16))}));
+        instructions.add(InstructionRegistry.createForEncoder("ori", new int[]{reg, reg, TwosComplement(s.substring(16, 32))}));
         return instructions;
         
     }
@@ -436,9 +428,5 @@ public class Macro {
         }
         return val; 
     }
-
-
-    
-
 
 }

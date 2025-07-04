@@ -12,14 +12,17 @@ import java.io.PrintStream;
 
 public class App {
     public static void main(String[] args) throws FileNotFoundException {
-         InputStream in = new FileInputStream("src/main/resources/mips programs/condition");
-//        InputStream in = System.in;
+        InputStream mipsFile = new FileInputStream("src/main/resources/mips programs/condition");
+        InputStream in = System.in;
         PrintStream out = System.out;
 
-        Assembler asm = new Assembler(in, out, 0);
-
+        Assembler asm = new Assembler(mipsFile, out, 0);
         int[] instructions = asm.toIntCodeArray();
         Configuration res = Simulator.simulate(instructions);
         Log.info(res.toString());
+
+        Assembler asmOut = new Assembler(in, out, 0);
+        asmOut.assembleToBinaryString();
+
     }
 }

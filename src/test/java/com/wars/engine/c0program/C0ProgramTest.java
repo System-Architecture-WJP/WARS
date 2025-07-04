@@ -3,12 +3,13 @@ package com.wars.engine.c0program;
 import com.wars.engine.simulator.Configuration;
 import com.wars.engine.simulator.Simulator;
 import com.wars.engine.util.CodeTranslation;
+import com.wars.engine.util.Log;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class C0ProgramTest {
+class C0ProgramTest {
 
     private Configuration config;
 
@@ -1208,8 +1209,19 @@ public class C0ProgramTest {
         assertEquals(expectedResult, config.getWord(address));
     }
 
+    @Test
+    void test_abstract_kernel() {
+        C0Program kernel = AbstractKernel.generateAbstractKernel();
+
+        Log.info("Generated mips code of lines " + kernel.getMipsCode().split("\n").length);
+
+        int[] byteCode = CodeTranslation.MIPSTranslation(kernel.getMipsCode());
+        System.out.println("Number of instruction " + byteCode.length);
+        config.setWordArray(byteCode, 0);
+    }
+
     private void simulateProgram(C0Program pr) {
-        int[] byteCode = CodeTranslation.MIPSTranslation(pr.mipsCode);
+        int[] byteCode = CodeTranslation.MIPSTranslation(pr.getMipsCode());
         config.setWordArray(byteCode, 0);
         Simulator.simulate(config);
     }

@@ -64,8 +64,9 @@ public class C0Program {
     }
 
     public static String toC0Grammar(String code){
-        String adjustedCode = "";
+        StringBuilder adjustedCode = new StringBuilder();
         boolean comment = false;
+        boolean extraSpace = false;
         for (int i = 0; i < code.length(); i++){
             if (code.charAt(i) == ' ' && i < code.length() - 2 && code.charAt(i + 1) == '/' && code.charAt(i + 2) == '/'){
                 comment = true; 
@@ -76,12 +77,17 @@ public class C0Program {
             if (code.charAt(i) == '\n'){
                 comment = false; 
             }
-            if (!comment && code.charAt(i) != '\n' && code.charAt(i) != '\t'){
-                adjustedCode += code.charAt(i);
+            if (code.charAt(i) == ' ' && (extraSpace || i == 0 || code.charAt(i - 1) == '\n')){
+                extraSpace = true;
             }
-            
-        }
-        return adjustedCode;
+            else {
+                extraSpace = false;
+            }
+            if (!comment && code.charAt(i) != '\n' && code.charAt(i) != '\t' && !extraSpace && code.charAt(i) != '\r'){
+                adjustedCode.append(code.charAt(i));
+            }
+        }  
+        return adjustedCode.toString();
     }
 
     public static String asm(String s){

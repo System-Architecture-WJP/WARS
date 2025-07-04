@@ -319,6 +319,8 @@ public class Macro {
             instructions.add(InstructionRegistry.create("lw", new int[]{i, 1, 4 * i}));
         }
 
+        instructions.add(InstructionRegistry.create("eret", new int[]{}));
+
         return instructions; 
     }
 

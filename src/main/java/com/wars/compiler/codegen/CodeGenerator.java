@@ -38,7 +38,7 @@ public class CodeGenerator {
     private final Map<String, List<String>> functionInstructions = new HashMap<>();
     private final Set<String> generatedFunctions = new HashSet<>();
     private static final Map<String, Integer> instructionRealSize = Map.of(
-        "restore-user", 45,
+        "restore-user", 46,
         "save-user", 46,
         "gpr", 2,
         "ssave", 1,

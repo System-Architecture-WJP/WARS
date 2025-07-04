@@ -11,8 +11,8 @@ import java.io.PrintStream;
 
 public class App {
     public static void main(String[] args) throws FileNotFoundException {
-        InputStream in = new FileInputStream("src/main/resources/mips programs/condition");
-//        InputStream in = System.in;
+        // InputStream in = new FileInputStream("src/main/resources/mips programs/condition");
+        InputStream in = System.in;
         PrintStream out = System.out;
 
         Assembler asm = new Assembler(in, out, 0);

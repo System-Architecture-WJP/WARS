@@ -20,6 +20,7 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 
 import com.wars.engine.macro.Macro;
+import com.wars.engine.util.Log;
 
 public class Assembler {
     private final Scanner inputScanner;
@@ -45,24 +46,23 @@ public class Assembler {
     }
 
     public void assembleToBinaryString() {
-        try (PrintStream outputPrintStream = new PrintStream(outputStream)) {
-            var instructionConsumer = (Consumer<Instruction>) instruction -> {
-                String binaryString = instruction.toBinaryString();
-                outputPrintStream.println(binaryString);
-            };
+        PrintStream outputPrintStream = new PrintStream(outputStream);
+        var instructionConsumer = (Consumer<Instruction>) instruction -> {
+            String binaryString = instruction.toBinaryString();
+            outputPrintStream.println(binaryString);
+        };
 
-            while (advance()) {
-                drainInstructions(instructionConsumer);
-            }
+        Log.info("___ Start of Assembly Code ___");
+        while (advance()) {
             drainInstructions(instructionConsumer);
         }
+        drainInstructions(instructionConsumer);
+        Log.info("___ End of Assembly Code ___");
     }
 
-    public int[] toByteCodeArray() {
+    public int[] toIntCodeArray() {
         List<Integer> out = new ArrayList<>();
-        var instructionConsumer = (Consumer<Instruction>) instruction -> {
-            out.add(instruction.encode());
-        };
+        var instructionConsumer = (Consumer<Instruction>) instruction -> out.add(instruction.encode());
 
         while (advance()) {
             drainInstructions(instructionConsumer);

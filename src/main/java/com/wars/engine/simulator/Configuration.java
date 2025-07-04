@@ -8,10 +8,9 @@ public class Configuration {
     private static final int PAGE_SHIFT = 12; // 2^12 = 4096 bytes per page
     private static final int PAGE_SIZE = 1 << PAGE_SHIFT;
     private static final int PAGE_MASK = PAGE_SIZE - 1;
-
-    private long pc;
     private final int[] gpr;
     private final Map<Integer, byte[]> memoryPaged;
+    private long pc;
     private boolean isRunning;
 
     public Configuration() {
@@ -63,9 +62,9 @@ public class Configuration {
         return memoryPaged.computeIfAbsent(pageNumber, k -> new byte[PAGE_SIZE]);
     }
 
-    public void setByteArray(byte[] arr, int startIndex) {
+    public void setWordArray(int[] arr, int startIndex) {
         for (int i = 0; i < arr.length; i++) {
-            setByte(startIndex + i, arr[i]);
+            setWord(startIndex + i * 4, arr[i]);
         }
     }
 
@@ -100,10 +99,10 @@ public class Configuration {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Configuration{");
-        sb.append("pc=").append(pc).append(", gpr={" + "\n");
+        sb.append("\n \t pc = ").append(pc).append(",\n").append("\t gpr = {" + "\n");
 
         for (int i = 0; i < gpr.length; i++) {
-            sb.append("gpr ").append(i).append(" - ").append(gpr[i]);
+            sb.append("\t \t gpr ").append(i).append(" - ").append(gpr[i]);
             sb.append("\n");
         }
 

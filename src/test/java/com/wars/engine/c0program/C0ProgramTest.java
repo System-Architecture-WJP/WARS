@@ -1027,8 +1027,8 @@ public class C0ProgramTest {
         // arrange
         String code = "int val; int readms(uint a){int tmp; gpr(1) = a; asm( lw 2 1 0 ); asm( sw 2 29 -4 ); return tmp}; int main(){uint a; a = 4100u; val = readms(a); return 1}~";
         C0Program pr = new C0Program(code);
-        byte[] byteCode = CodeTranslation.MIPSTranslationByteArray(pr.mipsCode);
-        config.setByteArray(byteCode, 0);
+        int[] byteCode = CodeTranslation.MIPSTranslation(pr.mipsCode);
+        config.setWordArray(byteCode, 0);
         int address = 4100;
         int expectedResult = -2147483647;
         config.setWord(address, expectedResult);
@@ -1209,8 +1209,8 @@ public class C0ProgramTest {
     }
 
     private void simulateProgram(C0Program pr) {
-        byte[] byteCode = CodeTranslation.MIPSTranslationByteArray(pr.mipsCode);
-        config.setByteArray(byteCode, 0);
+        int[] byteCode = CodeTranslation.MIPSTranslation(pr.mipsCode);
+        config.setWordArray(byteCode, 0);
         Simulator.simulate(config);
     }
 

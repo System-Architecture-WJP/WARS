@@ -22,8 +22,8 @@ public class Compiler {
 
         // System.out.println(pr);
         Configuration config = new Configuration();
-        byte[] byteCode = CodeTranslation.MIPSTranslationByteArray(pr.mipsCode);
-        config.setByteArray(byteCode, 0);
+//        int[] byteCode = CodeTranslation.MIPSTranslationIntArray(pr.mipsCode);
+//        config.setWordArray(byteCode, 0);
         Configuration res = Simulator.simulate(config);
 
         System.out.println("Syscall signal - " + config.getRegister(1));

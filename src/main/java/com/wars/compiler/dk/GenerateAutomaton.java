@@ -1,20 +1,26 @@
-package com.wars.compiler.dk; 
-import java.io.*;
+package com.wars.compiler.dk;
+
+import com.wars.compiler.grammar.Grammar;
+import com.wars.engine.util.Log;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.wars.compiler.grammar.Grammar;
 
 import static com.wars.compiler.util.Logger.log;
 
 public class GenerateAutomaton {
     private static final String BINARYFILE = "src/main/java/com/wars/compiler/dk/DK1.bin";
-    private static DK1 AUTOMATON;
     private static final String TerminalsFile = "src/main/java/com/wars/compiler/dk/DoNotTouchGrammar.txt";
     private static final String GrammarFile = "src/main/java/com/wars/compiler/dk/DoNotTouchTerminals.txt";
+    private static DK1 AUTOMATON;
 
-    
-    public static DK1 generateAutomaton(String grammarFilePath, String terminalFilePath, Grammar g){
-        
+    public static DK1 generateAutomaton(String grammarFilePath, String terminalFilePath, Grammar g) {
+
         String modifiedGrammar = readFromFile(grammarFilePath);
         String modifiedTerminals = readFromFile(terminalFilePath);
 
@@ -23,47 +29,43 @@ public class GenerateAutomaton {
 
         boolean modified = false;
 
-        if (!modifiedGrammar.equals(oldGrammar)){
+        if (!modifiedGrammar.equals(oldGrammar)) {
             modified = true;
             writeToFile(modifiedGrammar, GrammarFile);
-        } 
+        }
 
-        if (modifiedTerminals.equals(oldTerminals)){
+        if (modifiedTerminals.equals(oldTerminals)) {
             modified = true;
             writeToFile(modifiedTerminals, TerminalsFile);
         }
 
-        if (modified){
+        if (modified) {
             generateForGrammar(g);
-        }
-        else {
+        } else {
             loadFromBinary();
         }
 
-        return AUTOMATON; 
+        return AUTOMATON;
     }
 
     public static String readFromFile(String fileName) {
         try {
             return Files.readString(Paths.get(fileName));
+        } catch (IOException e) {
+            Log.error("Error reading file: " + e.getMessage());
         }
-        catch(IOException e){
-            System.out.println("Error reading file: " + e.getMessage());
-            return "";
-        }
-    }  
+        return "";
+    }
 
     public static void writeToFile(String content, String fileName) {
         try {
             Files.writeString(Paths.get(fileName), content);
-        }    
-        catch(IOException e){
-            System.out.println("Error writing file: " + e.getMessage());
-            
+        } catch (IOException e) {
+            Log.error("Error writing file: " + e.getMessage());
         }
     }
 
-    public static void generateForGrammar(Grammar g){
+    public static void generateForGrammar(Grammar g) {
 
         long startTime = System.currentTimeMillis();
         AUTOMATON = new DK1(g);
@@ -78,10 +80,10 @@ public class GenerateAutomaton {
 
         saveToBinaryFile();
     }
-    
+
 
     public static void loadFromBinary() {
-        
+
         long startTime = System.currentTimeMillis();
 
         try {
@@ -89,36 +91,34 @@ public class GenerateAutomaton {
             ObjectInputStream ois = new ObjectInputStream(fis);
 
             Object obj = ois.readObject();
-            if (obj instanceof DK1){
+            if (obj instanceof DK1) {
                 AUTOMATON = (DK1) obj;
-            } 
-        } 
-        catch (IOException | ClassNotFoundException e){
+            }
+        } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error loading from binary: " + e.getMessage());
             e.printStackTrace();
-            
+
         }
 
         long endTime = System.currentTimeMillis();
-        
+
         log("Loading completed in " + (endTime - startTime) + "ms");
         log("number of states: " + AUTOMATON.getStates().size());
         log("-----------------------");
         log("\n");
     }
 
-    private static void saveToBinaryFile(){
+    private static void saveToBinaryFile() {
         try (FileOutputStream fos = new FileOutputStream(BINARYFILE);
-            ObjectOutputStream oos = new ObjectOutputStream(fos)){
-                oos.writeObject(AUTOMATON);
-                oos.flush();
-            } 
-        catch (IOException e){
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(AUTOMATON);
+            oos.flush();
+        } catch (IOException e) {
             System.err.println("Error saving to binary: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to save automaton to binary", e);
         }
     }
-    
+
 }
 

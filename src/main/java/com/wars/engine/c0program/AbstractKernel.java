@@ -1,13 +1,16 @@
 package com.wars.engine.c0program;
 
 import com.wars.engine.util.Initialize;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 
 public class AbstractKernel extends C0Program {
 
+    public static String AbstractKernelFileName = "src/main/resources/c0 programs/AbstractKernel.txt";
     public int K = Initialize.K;
     public int p = Initialize.p;
     public int PTLE = Initialize.PTLE;
@@ -24,21 +27,18 @@ public class AbstractKernel extends C0Program {
     public int SMBASE = Initialize.SMBASE;
     public int a = Initialize.a;
     public int b = Initialize.b;
-
     public String code;
     public String mipsCode;
     public int[] byteCode;
 
-    public static String AbstractKernelFileName = "src/main/java/com/wars/engine/c0program/AbstractKernel.txt";
-    
 
-    public AbstractKernel(String code){
+    public AbstractKernel(String code) {
         this.code = code;
         this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
     }
 
-    public static AbstractKernel generateAbstractKernel(){
+    public static AbstractKernel generateAbstractKernel() {
         String code = "";
         Path path = Path.of(AbstractKernelFileName);
         try {
@@ -51,27 +51,24 @@ public class AbstractKernel extends C0Program {
     }
 
     @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder();
-        sb.append("------------C0 Program------------\n");
-        sb.append(this.code + "\n");
-        sb.append("------------MIPS Code------------\n");
-        sb.append(this.mipsCode + "\n");
-        sb.append("------------Byte Code------------\n");
-        sb.append(this.byteCode + "\n");
-
-        return sb.toString();
+    public String toString() {
+        return "------------C0 Program------------\n" +
+                this.code + "\n" +
+                "------------MIPS Code------------\n" +
+                this.mipsCode + "\n" +
+                "------------Byte Code------------\n" +
+                Arrays.toString(this.byteCode) + "\n";
     }
 
-    public String getMipsCode(){
+    public String getMipsCode() {
         return this.mipsCode;
     }
 
-    public String getCode(){
+    public String getCode() {
         return this.code;
     }
 
-    public int[] getByteCode(){
+    public int[] getByteCode() {
         return this.byteCode;
     }
 }

@@ -2,22 +2,14 @@ package com.wars.engine.simulator;
 
 import com.wars.engine.instruction.InstructionRegistry;
 import com.wars.engine.exception.SimulatorException;
+import com.wars.engine.util.Log;
 
 public class Simulator {
 
     public static Configuration simulate(int[] instructions) {
         Configuration c = new Configuration();
-
-        for (int i = 0; i < instructions.length; i++) {
-            c.setWord(i * 4, instructions[i]);
-        }
-
-        while (c.hasWordAt((int) c.getPC()) && c.isRunning()) {
-            int instructionWord = c.getWord((int) c.getPC());
-            simulateStep(c, instructionWord);
-        }
-
-        return c;
+        c.setWordArray(instructions, 0);
+        return simulate(c);
     }
 
     public static Configuration simulate(Configuration c) {
@@ -85,7 +77,7 @@ public class Simulator {
     }
 
     private static void executeInstruction(Configuration configuration, String mnemonic, int[] operands) {
-        System.out.println("Executing instruction: " + mnemonic + " with operands: " + java.util.Arrays.toString(operands));
+        Log.info("Executing instruction: " + mnemonic + " with operands: " + java.util.Arrays.toString(operands));
         var instruction = InstructionRegistry.getExecutableInstruction(mnemonic, operands);
         instruction.execute(configuration);
     }

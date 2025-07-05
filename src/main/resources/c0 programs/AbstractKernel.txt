@@ -1,21 +1,21 @@
-typedef uint' ptrunsigned; // pointer unsigned integer type
-typedef uint[32] u; // spr
-typedef uint[8] v; // gpr
+typedef uint' ptrunsigned; // pointer unsigned integer type 
+typedef uint[32] u; // gpr
+typedef uint[8] v; // spr
 typedef struct {u GPR; v SPR} pcb; // gpr + spr
 typedef pcb[3] PCBt; // for p user and + abstract kernel (gpr + spr)
 
 typedef uint[4] PTAt; // page table entries array
-typedef uint[3] PTOIt; // page table origin array for p user and abstract kernel
+typedef uint[3] PTOIt; // page table origin array for p user
 
 typedef struct {uint usr; uint px} auxrec; // for a physical page it stores user which held this page and respective virtual page
 typedef auxrec[2] IPTt; // for every physical page, above
 
 
-uint CP; // Current Process 0 - kernel, > 0 - user
+uint CP; // current process: 0 - kernel, > 0 - user
 bool ipf; // invalid page fault
-PCBt PCB; // Process Control Block
-PTAt PTA; // Page Table Address
-PTOIt PTOI; // Page Table Origin
+PCBt PCB; // process control block
+PTAt PTA; // page table address
+PTOIt PTOI; // page table origin
 
 uint i; // interrupt mask
 uint IL; // interrupt level
@@ -25,21 +25,21 @@ uint EVPX; // exception virutal address page index
 bool ptle; // page table length exception
 bool psfull; // all physical pages are full
 uint nextup; // next page index to swap in
-IPTt ipt; //
+IPTt ipt; // for each allocated virtual page from nup - assign its user and page index
 int WOV; // write only variable for void functions
 
-uint p;
-uint PTASIZE;
-uint nup;
-uint PTLE;
+uint p; // number of users
+uint PTASIZE; // sum of all possible allocated virtual pages
+uint nup; // number of virtual pages that can be stored in physical memory
+uint PTL; // fixed page table size for each user
 
-uint K;
+uint K; // size of the page - 1024 words
 
-uint HDBASE;
-uint UPBASE;
-uint SMBASE;
-uint SMUSERPAGE;
-uint SMSIZE;
+uint HDBASE; // beginning of disk ports region - 41K
+uint UPBASE; // beginning of allocated virtual pages region - 
+uint SMBASE; // base of swap memory, where first user stores its pages
+uint SMUSERPAGE; // number of pages per user - currently 2^20
+uint SMSIZE; // swap memory size - 2^28
 
 
 
@@ -195,44 +195,36 @@ int main(){
         nup = 2u;
         K = 1024u;
         SMUSERPAGE = 1048576u;
-        PTLE = 2u;
+        PTL = 2u;
         SMSIZE = 268435456u;
 
-        PTASIZE = p*PTLE;
-        UPBASE = 20u*K;
-        HDBASE = UPBASE + 4u*K*nup + K;
+        PTASIZE = p*PTL;
+        UPBASE = 44u*K;
+        HDBASE = 56u*K;
         SMBASE = SMSIZE-p*SMUSERPAGE;
 
         i = 1u;
-        while i<PTASIZE+1u {
-                PTA[i] = 0u;
+        while i<p+1u {
+                PTOI[i] = (i-1u)*PTL;
                 i = i + 1u
         };
 
         i = 1u;
         while i<p+1u {
-                PTOI[i] = (i-1u)*2u;
-                i = i + 1u
-        };
-
-        i = 1u;
-        while i<p+1u {
-                PCB[i].SPR[6] = 2u;
-                i = i + 1u
-        };
-
-        i = 1u;
-        while i<p+1u {
+                PCB[i].SPR[1] = 4294967295u;
+                PCB[i].SPR[3] = 0u;
                 gpr(1) = PTA[PTOI[i]]&;
                 PCB[i].SPR[5] = gpr(1);
+                PCB[i].SPR[6] = PTL;
                 i = i + 1u
         };
 
         psfull = false;
         nextup = 0u;
 
-        gpr(1) = PCB[0].GPR[0]&; // init referernce on scratch memory
+        gpr(1) = PCB[0].GPR[0]&; // save kernel's pcb on scratch memory
         asm( sw 1 0 4096 );
+
         while true {
                 scheduler();
                 runvm()

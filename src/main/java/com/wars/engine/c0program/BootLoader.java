@@ -31,7 +31,7 @@ public class BootLoader extends C0Program {
     public String mipsCode;
     public int[] byteCode;
 
-    public static String BootLoaderFileName = "src/main/resources/c0 programs/BootLoader.txt";
+    public static String BootLoaderFileName = "src/main/resources/c0 programs/FetchKernel.txt";
 
 
     public BootLoader(String code){
@@ -64,18 +64,22 @@ public class BootLoader extends C0Program {
         List<String> instructions = CodeTranslation.C0TranslationList(adjustedCode, true);
 
         StringBuilder initial = new StringBuilder();
+        int kernelFetchingSize = 0;
         for(int i = 0; i < instructions.size() - 2; i++){
-            initial.append(instructions.get(i));
+            String instruction = instructions.get(i);
+            initial.append(instruction);
+            if (!instruction.equals("\n") && instruction.charAt(0) != '_'){
+                kernelFetchingSize += CodeGenerator.getInstance().instructionRealSize(instructions.get(i));
+            }
         }
 
         // Initialize gammaAddress
         AbstractKernel.generateAbstractKernel();
         
-        int kernelFetchingSize = CodeGenerator.getInstance().totalProgramRealSize(true) - Context.removedStatementsForBootLoader;
-        int beforeJumpToKernelSize = 4 * (Context.bootLoaderInit + kernelFetchingSize);
-        int relativeA = this.KernelStart - beforeJumpToKernelSize;
-        int beforeJumpToGamma = beforeJumpToKernelSize + 4 * 2;
-        int gamma = 4 * Context.gammaAddress - beforeJumpToGamma;
+        int beforeJumpToKernel = 4 * (Context.bootLoaderInit + kernelFetchingSize);
+        int relativeA = this.KernelStart - beforeJumpToKernel;
+        int beforeJumpToGamma = beforeJumpToKernel + 4 * 2;
+        int gamma = 4 * Context.gammaAddress + this.KernelStart - beforeJumpToGamma;
         StringBuilder sb = new StringBuilder();
 
         sb.append("macro: ssave(1)" + "\n");
@@ -89,11 +93,9 @@ public class BootLoader extends C0Program {
         sb.append("j " + relativeA + "\n");
         sb.append("\n");
 
-        sb.append("_continue:" + "\n");
+        sb.append("_continue:\n");
         sb.append("macro: srestore(1)" + "\n");
         sb.append("j " + gamma + "\n");
-
-
 
         return sb.toString();
     }

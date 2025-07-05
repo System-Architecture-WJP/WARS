@@ -516,6 +516,7 @@ public class CodeGenerator {
                 gammaAddress += instructionRealSize(instr);
             }
         }
+        System.out.println(gammaAddress);
         return res.toString();
     }
 

@@ -10,7 +10,7 @@ import com.wars.engine.util.CodeTranslation;
 
 public class Compiler {
     public static void main(String[] args) {
-        Context.DEBUG = true;
+        Context.DEBUG = false;;
 
         BootLoader bt = BootLoader.generateBootLoader();
         AbstractKernel ab = AbstractKernel.generateAbstractKernel();
@@ -22,15 +22,18 @@ public class Compiler {
 
         // System.out.println(pr);
         Configuration config = new Configuration();
-//        int[] byteCode = CodeTranslation.MIPSTranslationIntArray(pr.mipsCode);
-//        config.setWordArray(byteCode, 0);
+        // int[] byteCode = CodeTranslation.MIPSTranslationIntArray(pr.mipsCode);
+        // config.setWordArray(byteCode, 0);
         Configuration res = Simulator.simulate(config);
 
         System.out.println("Syscall signal - " + config.getRegister(1));
         System.out.println("a: " + config.getWord(pr.SBASE));
         System.out.println("a: " + config.getWord(pr.SBASE + 4));
         System.out.println(res);
-        System.out.println(ab.getByteCode().length);
-        System.out.println(Context.gammaAddress);
+        // System.out.println(bt.getMipsCode());
+        // System.out.println(ab.getByteCode().length);
+        // System.out.println(ab);
+        // System.out.println(Context.gammaAddress);
+        System.out.println();
     }
 }

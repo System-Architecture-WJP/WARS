@@ -1,0 +1,85 @@
+uint K;
+uint nup;
+
+uint a;
+uint b;
+
+uint HDBASE;
+uint UPBASE;
+
+
+int readms(uint a){
+
+        int tmp;
+        gpr(1) = a;
+        asm( lw 2 1 0 );
+        asm( sw 2 29 -4 );
+        return tmp
+};
+
+
+void writems(uint x, uint a){
+
+        gpr(1) = x;
+        gpr(2) = a {1};
+        asm( sw 1 2 0 )
+};
+
+
+void copyms(uint a, uint b, uint L){
+
+        gpr(1) = a;
+        gpr(2) = b {1};
+        gpr(3) = L {1, 2};
+
+        asm( blez 3 7 );
+        asm( lw 4 1 0 );
+        asm( sw 4 2 0 );
+        asm( addi 1 1 4 );
+        asm( addi 2 2 4 );
+        asm( addi 3 3 -1 );
+        asm( blez 0 -6 )
+};
+
+
+void readdisk(uint ppx, uint spx){
+
+        int y;
+        writems(spx, HDBASE+4u*K);
+        writems(1u, HDBASE+4u*K+4u);
+
+        y = 1;
+        while y!=0 {
+                y = readms(HDBASE+4u*K+4u)
+        };
+
+        copyms(HDBASE, ppx*4u*K, K)
+};
+
+int main(){
+
+        uint SPX;
+        uint PPX;
+        uint L;
+
+        nup = 2u;
+        K = 1024u;
+        a = 12u*K;
+        b = 20u*K;
+
+
+        UPBASE = 44u*K;
+        HDBASE = 56u*K;
+
+        SPX = 0u;
+        PPX = a;
+        L = (b-a+4u)/(4u*K);
+
+        while L>0u {
+                readdisk(PPX, SPX);
+                SPX = SPX + 1u;
+                PPX = PPX + 1u;
+                L = L-1u
+        };
+        return 1
+}~

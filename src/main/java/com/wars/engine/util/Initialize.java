@@ -23,5 +23,7 @@ public class Initialize {
     public static final int SMUSERPAGE = (1 << 20);
     public static final int SMBASE = (SMSIZE - p * SMUSERPAGE);
     
+    public static final int bootLoaderInit = 4;
+    public static int gammaAddress = 1255; 
     
 }

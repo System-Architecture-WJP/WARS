@@ -2,8 +2,15 @@ package com.wars.engine.c0program;
 
 import com.wars.compiler.util.Context;
 import com.wars.engine.util.CodeTranslation;
+import com.wars.engine.util.Log;
 
 import java.util.Arrays;
+import java.io.FileWriter.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 public class C0Program {
 
@@ -86,11 +93,19 @@ public class C0Program {
         Context.HBASE = this.HBASE;
         Context.SMAX = this.SMAX;
         Context.HMAX = this.HMAX;
-        return CodeTranslation.C0Translation(adjustedCode, true);
+        return CodeTranslation.C0Translation(adjustedCode);
     }
 
     public int[] byteCode(String mipsCode) {
         return CodeTranslation.MIPSTranslation(mipsCode);
+    }
+
+    public static void writeCodeToFile(String code, String fileName) {
+        try {
+            Files.writeString(Paths.get(fileName), code);
+        } catch (IOException e) {
+            Log.error("Error writing file: " + e.getMessage());
+        }
     }
 
     @Override

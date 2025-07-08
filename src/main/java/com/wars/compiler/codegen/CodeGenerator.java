@@ -83,6 +83,9 @@ public class CodeGenerator {
     }
 
     public static int instructionRealSize(String instr){
+        if (instr.isEmpty() || instr.equals("\n")) {
+            return 0;
+        }
         String[] split = instr.split("[\\s(),]+");
         if (split[0].equals("macro:")){
             return instructionRealSize.get(split[1]);
@@ -471,7 +474,6 @@ public class CodeGenerator {
             gmSize = 0;
         }
 
-        int gammaAddress = 0; 
         StringBuilder res = new StringBuilder();
         if (program){
             res.append("macro: gpr(" + HPT + ") = enc(" + HBASE + ", uint)\n");
@@ -482,20 +484,12 @@ public class CodeGenerator {
             res.append("macro: zero(" + BPT + ", 1)\n");
             res.append("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
             res.append("j _" + headFunction + "\n\n");
-            gammaAddress = Context.programInit;
         }
 
         res.append("_" + headFunction + ":\n");
         List<String> mainInstructions = functionInstructions.get(headFunction);
         res.append(String.join("\n", mainInstructions))
                 .append("\n");
-        
-        for(String instr: mainInstructions){
-            if (instr.equals("macro: save-user")) {
-                Context.gammaAddress = gammaAddress;
-            }
-            gammaAddress += instructionRealSize(instr);
-        } 
         
         functionInstructions.forEach((key, value) -> {
             if (!key.equals(headFunction)) {
@@ -504,67 +498,54 @@ public class CodeGenerator {
                         .append("\n");
             }
         });
-
-        // gamma address bootloader jumps in case no reset. 
-        for (Map.Entry<String, List<String>> entry : functionInstructions.entrySet()) {
-            if (entry.getKey().equals(headFunction)) 
-                continue;
-            for (String instr : entry.getValue()) {
-                if (instr.equals("macro: save-user")) {
-                    Context.gammaAddress = gammaAddress;
-                }
-                gammaAddress += instructionRealSize(instr);
-            }
-        }
-        System.out.println(gammaAddress);
         return res.toString();
     }
 
-    public List<String> getInstructionsList(boolean program) throws FunctionException {
-        List<String> res = new LinkedList<>();
-        Variable gm = null;
-        int gmSize = 0; 
-        String headFunction = "main";
-        Fun function = FunctionTable.getInstance().getFunction(headFunction);
+    // public List<String> getInstructionsList(boolean program) throws FunctionException {
+    //     List<String> res = new LinkedList<>();
+    //     Variable gm = null;
+    //     int gmSize = 0; 
+    //     String headFunction = "main";
+    //     Fun function = FunctionTable.getInstance().getFunction(headFunction);
 
-        try {
-            gm = MemoryTable.getInstance().gm();
-            gmSize = gm.getType().size;
-        }
-        catch(MemoryStructException e){
-            gmSize = 0;
-        }
+    //     try {
+    //         gm = MemoryTable.getInstance().gm();
+    //         gmSize = gm.getType().size;
+    //     }
+    //     catch(MemoryStructException e){
+    //         gmSize = 0;
+    //     }
 
-        if (program){
-            res.add("macro: gpr(" + HPT + ") = enc(" + HBASE + ", uint)\n");
-            res.add("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
-            res.add("addiu " + SPT + " " + BPT + " " + (function.getSize() + 8 + gmSize) + "\n");
-            res.add("subu 1 " + SPT + " " + BPT + "\n");
-            res.add("srl 1 1 2\n");
-            res.add("macro: zero(" + BPT + ", 1)\n");
-            res.add("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
-            res.add("j _" + headFunction + "\n");
-        }
+    //     if (program){
+    //         res.add("macro: gpr(" + HPT + ") = enc(" + HBASE + ", uint)\n");
+    //         res.add("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
+    //         res.add("addiu " + SPT + " " + BPT + " " + (function.getSize() + 8 + gmSize) + "\n");
+    //         res.add("subu 1 " + SPT + " " + BPT + "\n");
+    //         res.add("srl 1 1 2\n");
+    //         res.add("macro: zero(" + BPT + ", 1)\n");
+    //         res.add("macro: gpr(" + BPT + ") = enc(" + SBASE + ", uint)\n");
+    //         res.add("j _" + headFunction + "\n");
+    //     }
 
         
 
-        functionInstructions.forEach((key, value) -> {
-            if (!key.equals(headFunction)) {
-                res.add("\n_" + key + ":\n");
-                res.add(String.join("\n", value));
-                res.add("\n");
-            }
-        });
+    //     functionInstructions.forEach((key, value) -> {
+    //         if (!key.equals(headFunction)) {
+    //             res.add("\n_" + key + ":\n");
+    //             res.add(String.join("\n", value));
+    //             res.add("\n");
+    //         }
+    //     });
 
-        res.add("\n");
-        res.add("_" + headFunction + ":\n");
-        List<String> mainInstructions = functionInstructions.get(headFunction);
-        for(String inst : mainInstructions){
-            res.add(inst + "\n");
-        }
+    //     res.add("\n");
+    //     res.add("_" + headFunction + ":\n");
+    //     List<String> mainInstructions = functionInstructions.get(headFunction);
+    //     for(String inst : mainInstructions){
+    //         res.add(inst + "\n");
+    //     }
 
-        return res; 
-    }
+    //     return res; 
+    // }
 
 
     public void generateLoop(DTE dte) throws Exception {

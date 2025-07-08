@@ -1,0 +1,85 @@
+uint K; // size of the page - 1024 words
+uint nup; // number of virtual pages that can be stored in physical memory
+
+uint a; // kernel region begins - 12K
+uint b; // kernel region ends - 20K
+
+uint HDBASE; // beginning of disk ports region - 56K
+uint UPBASE; // beginning of allocated virtual pages region - 44K - nup pages 
+
+
+int readms(uint a){ //software read from hardwware memory
+
+        int tmp;
+        gpr(1) = a;
+        asm( lw 2 1 0 );
+        asm( sw 2 29 -4 );
+        return tmp
+};
+
+
+void writems(uint x, uint a){ //software write to hardware memory
+
+        gpr(1) = x;
+        gpr(2) = a {1};
+        asm( sw 1 2 0 )
+};
+
+
+void copyms(uint a, uint b, uint L){ //copies L words starting from a in main memory to L words from b
+
+        gpr(1) = a;
+        gpr(2) = b {1};
+        gpr(3) = L {1, 2};
+
+        asm( blez 3 7 ); // until L <= 0 {
+        asm( lw 4 1 0 );
+        asm( sw 4 2 0 ); // m(b) = m(a)
+        asm( addi 1 1 4 ); // a += 4
+        asm( addi 2 2 4 ); // b += 4
+        asm( addi 3 3 -1 ); // L -= 1
+        asm( blez 0 -6 ) // }
+};
+
+
+void readdisk(uint ppx, uint spx){ // ppx - main memroy page index where disk page is stored, spx - swap memory page index which is read
+
+        int y;
+        writems(spx, HDBASE+4096u); // spa(d) = spx
+        writems(1u, HDBASE+4096u+4u); // issue read access
+
+        y = 1;
+        while y!=0 {
+                y = readms(HDBASE+4096u+4u) // polling
+        };
+
+        copyms(HDBASE, ppx*4096u, K) // copy page from buffer
+};
+
+int main(){
+
+        uint SPX;
+        uint PPX;
+        uint L;
+
+        nup = 2u;
+        K = 1024u;
+
+        a = 12u*K;
+        b = 20u*K;
+
+        UPBASE = 44u*K;
+        HDBASE = 56u*K;
+
+        SPX = 0u; // kernel code on disk is stored in the beginning
+        PPX = a/4096u; // beginning page of [a : b] region, a must be page aligned
+        L = (b-a+4u)/4096u; // total pages that should be fetched - 2
+
+        while L>0u {
+                readdisk(PPX, SPX);
+                SPX = SPX + 1u;
+                PPX = PPX + 1u;
+                L = L-1u
+        };
+        return 1 // returning from function and translation of the return statement is removed through Assembler translation
+}~

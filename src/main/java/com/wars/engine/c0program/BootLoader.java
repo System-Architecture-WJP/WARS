@@ -7,6 +7,8 @@ import com.wars.compiler.util.Context;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.wars.compiler.codegen.CodeGenerator;
@@ -31,13 +33,14 @@ public class BootLoader extends C0Program {
     public String mipsCode;
     public int[] byteCode;
 
-    public static String BootLoaderFileName = "src/main/resources/c0 programs/FetchKernel.txt";
-
+    public static String BootLoaderFileName = "src/main/resources/c0 programs/FetchKernel.c0";
+    public static String ROM = "src/main/resources/mips programs/ROM";
 
     public BootLoader(String code){
         this.code = code;
         this.mipsCode = mipsCode(this.code);
         this.byteCode = byteCode(this.mipsCode);
+        writeCodeToFile(this.mipsCode, ROM);
     }
 
     public static BootLoader generateBootLoader(){
@@ -60,44 +63,60 @@ public class BootLoader extends C0Program {
         Context.SMAX = this.SMAX;
         Context.HMAX = this.HMAX;
 
+        String mipsInstructions = CodeTranslation.C0Translation(adjustedCode);
+        List<String> instructions = new ArrayList<>(Arrays.asList(mipsInstructions.split("\n")));
+        int beforeJumpToGamma = 0;
+        boolean main = false;
+        int index = 0;
 
-        List<String> instructions = CodeTranslation.C0TranslationList(adjustedCode, true);
-
-        StringBuilder initial = new StringBuilder();
-        int kernelFetchingSize = 0;
-        for(int i = 0; i < instructions.size() - 2; i++){
+        for(int i = 0; i < instructions.size(); i++){
             String instruction = instructions.get(i);
-            initial.append(instruction);
-            if (!instruction.equals("\n") && instruction.charAt(0) != '_'){
-                kernelFetchingSize += CodeGenerator.getInstance().instructionRealSize(instructions.get(i));
+            if (main && instructions.get(i + 2).isEmpty()){
+                index = i;
+                break; 
             }
+            if (instruction.startsWith("_main:")){
+                main = true;
+            }
+            
+            beforeJumpToGamma += CodeGenerator.getInstance().instructionRealSize(instruction);
+        }
+
+        // remove return translation
+        instructions.remove(index); 
+        instructions.remove(index);
+
+        int kernelFetchingSize = beforeJumpToGamma; // without instruction - jump to kernel 
+
+        for (int i = index; i < instructions.size(); i++) {
+            kernelFetchingSize += CodeGenerator.getInstance().instructionRealSize(instructions.get(i));
         }
 
         // Initialize gammaAddress
-        AbstractKernel.generateAbstractKernel();
+        AbstractKernel ab = AbstractKernel.generateAbstractKernel();
+        ab.findGammaAddress();
+        System.out.println();
         
-        int beforeJumpToKernel = 4 * (Context.bootLoaderInit + kernelFetchingSize);
-        int relativeA = this.KernelStart - beforeJumpToKernel;
-        int beforeJumpToGamma = beforeJumpToKernel + 4 * 2;
-        int gamma = 4 * Context.gammaAddress + this.KernelStart - beforeJumpToGamma;
-        StringBuilder sb = new StringBuilder();
+        int beforeJumpToKernelPC = 4 * Initialize.bootLoaderInit + 4 * beforeJumpToGamma;
+        int offsetA = this.KernelStart - beforeJumpToKernelPC;
+        
+        instructions.add(index, "j " + offsetA);
+        instructions.add(0, "macro: ssave(1)");
+        instructions.add(1, "movs2g 2 1");
+        instructions.add(2, "andi 1 1 1");
+        instructions.add(3, "blez 1 " + (kernelFetchingSize + 2)); // additional instruction for jump to kernel;
 
-        sb.append("macro: ssave(1)" + "\n");
-        sb.append("movs2g 2 1" + "\n");
-        sb.append("andi 1 1 1" + "\n");
-        sb.append("blez 1 " + (kernelFetchingSize + 2) + "\n");
+        instructions.add(4, "\n_bootloader:");
+        instructions.add("\n_continue:");
+        instructions.add("macro: srestore(1)");
 
-        sb.append("\n");
-        sb.append("_bootloader:\n");
-        sb.append(initial.toString());
-        sb.append("j " + relativeA + "\n");
-        sb.append("\n");
+        int beforeJumpToGammaPC = 4 * Initialize.bootLoaderInit + 4 * kernelFetchingSize + 8; // for srestore, and previous jump
+        int offsetGamma = this.KernelStart + 4 * Initialize.gammaAddress - 4 * beforeJumpToGammaPC;
 
-        sb.append("_continue:\n");
-        sb.append("macro: srestore(1)" + "\n");
-        sb.append("j " + gamma + "\n");
+        instructions.add("j " + offsetGamma); 
 
-        return sb.toString();
+        String mipsCode = String.join("\n", instructions);
+        return mipsCode;
     }
 
     @Override

@@ -1,0 +1,231 @@
+typedef uint' ptrunsigned;
+typedef uint[32] u;
+typedef uint[8] v;
+typedef struct {u GPR; v SPR} pcb;
+typedef pcb[3] PCBt;
+
+typedef uint[4] PTAt;
+typedef uint[3] PTOIt;
+
+typedef struct {uint usr; uint px} auxrec;
+typedef auxrec[2] IPTt;
+
+
+uint CP;
+bool ipf;
+PCBt PCB;
+PTAt PTA;
+PTOIt PTOI;
+
+uint i;
+uint IL;
+uint found;
+uint EVA;
+uint EVPX;
+bool ptle;
+bool psfull;
+uint nextup;
+IPTt ipt;
+int WOV;
+
+uint p;
+uint PTASIZE;
+uint nup;
+uint PTL;
+
+uint K;
+
+uint HDBASE;
+uint UPBASE; 
+uint SMBASE;
+uint SMPAGENUM; 
+uint SMSIZE;
+
+
+
+
+int readms(uint a){
+
+        int tmp;
+        gpr(1) = a;
+        asm( lw 2 1 0 );
+        asm( sw 2 29 -4 );
+        return tmp
+};
+
+
+void writems(uint x, uint a){
+
+        gpr(1) = x;
+        gpr(2) = a {1};
+        asm( sw 1 2 0 )
+};
+
+
+void copyms(uint a, uint b, uint L){
+
+        gpr(1) = a;
+        gpr(2) = b {1};
+        gpr(3) = L {1, 2};
+
+        asm( blez 3 7 );
+        asm( lw 4 1 0 );
+        asm( sw 4 2 0 );
+        asm( addi 1 1 4 );
+        asm( addi 2 2 4 );
+        asm( addi 3 3 -1 );
+        asm( blez 0 -6 )
+};
+
+
+void readdisk(uint ppx, uint spx){
+
+        int y;
+        writems(spx, HDBASE+4096u);
+        writems(1u, HDBASE+4096u+4u);
+
+        y = 1;
+        while y!=0 {
+                y = readms(HDBASE+4096u+4u)
+        };
+
+        copyms(HDBASE, ppx*4096u, K)
+};
+
+
+void writedisk(uint spx, uint ppx){
+
+        int y;
+        copyms(ppx*4096u, HDBASE, K);
+        writems(spx, HDBASE+4096u);
+        writems(2u, HDBASE+4096u+4u);
+
+        y = 2;
+        while y!=0 {
+                y = readms(HDBASE+4096u+4u)
+        }
+
+};
+
+
+void swapIn(){
+
+        uint PPXIN;
+        uint SPAIN;
+        uint PTEIIN;
+
+        PPXIN = UPBASE / 4096u + nextup;
+        SPAIN = SMBASE + CP*SMPAGENUM + EVPX;
+        PTEIIN = PTOI[CP] + EVPX;
+        readdisk(PPXIN, SPAIN);
+        PTA[PTEIIN] = PPXIN*4096u + 2048u;
+
+        ipt[nextup].usr = CP;
+        ipt[nextup].px = EVPX
+
+};
+
+void swapOut(){
+
+        uint PPXOUT;
+        uint SPAOUT;
+        uint PTEIOUT;
+
+        PPXOUT = UPBASE / 4096u + nextup;
+        SPAOUT = SMBASE + ipt[nextup].usr*SMPAGENUM + ipt[nextup].px;
+        PTEIOUT = PTOI[ipt[nextup].usr] + ipt[nextup].px;
+
+        writedisk(SPAOUT, PPXOUT);
+        PTA[PTEIOUT] = PTA[PTEIOUT]-2048u
+
+};
+
+void ipfHandler(){
+
+        if (!(bool)psfull) {swapIn()} else {swapOut(); swapIn()};
+
+        nextup = nextup + 1u;
+        if nextup==nup {nextup = 0u; psfull = true}
+};
+
+void scheduler(){
+
+        if CP==p {CP = 1u} else {CP = CP+1u}
+};
+
+
+void runvm(){
+
+        gpr(1) = PCB[CP].GPR[0]&;
+        asm( macro: restore-user );
+
+        asm( macro: save-user );
+
+        IL = 0u;
+        i = 1u;
+        found = 0u;
+        while found==0u {
+                IL = IL+1u;
+                i = 2u*i;
+                gpr(1) = i;
+                gpr(2) = PCB[CP].SPR[2] {1};
+                asm( and 3 1 2 );
+                found = gpr(3)
+        };
+
+        EVA = 0u;
+        if IL==17u {EVA = PCB[CP].SPR[3]};
+        if IL==20u {EVA = PCB[CP].SPR[4]};
+
+        gpr(1) = EVA;
+        asm( srl 1 1 12 );
+        EVPX = gpr(1);
+
+        ptle = (EVPX>=PCB[CP].SPR[6]);
+        ipf = (IL==17u||IL==20u)&&!(bool)ptle;
+
+
+        if (bool)ipf {ipfHandler(); gpr(1) = PCB[CP].GPR[0]&; asm( macro: restore-user )}
+};
+
+int main(){
+        uint i;
+
+        p = 2u;
+        nup = 2u;
+        K = 1024u;
+        SMPAGENUM = 1048576u;
+        PTL = 2u;
+        SMSIZE = 268435456u;
+
+        PTASIZE = p*PTL;
+        UPBASE = 44u*K;
+        HDBASE = 56u*K;
+        SMBASE = SMSIZE-p*SMPAGENUM;
+
+        i = 1u;
+        while i<p+1u {
+                PTOI[i] = (i-1u)*PTL;
+                i = i + 1u
+        };
+
+        i = 1u;
+        while i<p+1u {
+                PCB[i].SPR[1] = 4294967295u;
+                PCB[i].SPR[3] = 0u;
+                gpr(1) = PTA[PTOI[i]]&;
+                PCB[i].SPR[5] = gpr(1);
+                PCB[i].SPR[6] = PTL;
+                i = i + 1u
+        };
+
+
+        gpr(1) = PCB[0].GPR[0]&;
+        asm( sw 1 0 4096 );
+
+        while true {
+                scheduler();
+                runvm()
+        };
+        return 1
+}~

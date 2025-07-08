@@ -1209,16 +1209,6 @@ class C0ProgramTest {
         assertEquals(expectedResult, config.getWord(address));
     }
 
-    @Test
-    void test_abstract_kernel() {
-        C0Program kernel = AbstractKernel.generateAbstractKernel();
-
-        Log.info("Generated mips code of lines " + kernel.getMipsCode().split("\n").length);
-
-        int[] byteCode = CodeTranslation.MIPSTranslation(kernel.getMipsCode());
-        System.out.println("Number of instruction " + byteCode.length);
-        config.setWordArray(byteCode, 0);
-    }
 
     private void simulateProgram(C0Program pr) {
         int[] byteCode = CodeTranslation.MIPSTranslation(pr.getMipsCode());

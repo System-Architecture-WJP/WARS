@@ -7,10 +7,11 @@ import com.wars.compiler.util.Context;
 import com.wars.engine.simulator.Configuration;
 import com.wars.engine.simulator.Simulator;
 import com.wars.engine.util.CodeTranslation;
+import com.wars.engine.util.Initialize;
 
 public class Compiler {
     public static void main(String[] args) {
-        Context.DEBUG = false;;
+        Context.DEBUG = false;
 
         BootLoader bt = BootLoader.generateBootLoader();
         AbstractKernel ab = AbstractKernel.generateAbstractKernel();
@@ -20,20 +21,15 @@ public class Compiler {
         String code = "int a; int b; void swap(int a){gpr(1) = a; gpr(2) = b {1}; b = gpr(1) {2}; a = gpr(2)}; int main(){bool c; c = a+2>=3; a = " + a + "; b = " + b + "; swap(2*3*2); return 1}~";
         C0Program pr = new C0Program(code);
 
-        // System.out.println(pr);
         Configuration config = new Configuration();
-        // int[] byteCode = CodeTranslation.MIPSTranslationIntArray(pr.mipsCode);
-        // config.setWordArray(byteCode, 0);
+        int[] byteCode = CodeTranslation.MIPSTranslation(pr.mipsCode);
+        config.setWordArray(byteCode, 0);
         Configuration res = Simulator.simulate(config);
 
         System.out.println("Syscall signal - " + config.getRegister(1));
         System.out.println("a: " + config.getWord(pr.SBASE));
         System.out.println("a: " + config.getWord(pr.SBASE + 4));
         System.out.println(res);
-        // System.out.println(bt.getMipsCode());
-        // System.out.println(ab.getByteCode().length);
-        // System.out.println(ab);
-        // System.out.println(Context.gammaAddress);
-        System.out.println();
+
     }
 }

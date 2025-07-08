@@ -10,9 +10,6 @@ public class Context {
     public static int HMAX = 12 * (1 << 10);
     public static int RA = 31;
     public static boolean DEBUG = true;
-    // only for abstract kernel
-    public static int programInit = 14; // number of words preceding program;
-    public static int gammaAddress = 1408; 
-    public static int bootLoaderInit = 4;
-    public static int removedStatementsForBootLoader = 3;
+    public static int programInit = 14; 
+    
 }

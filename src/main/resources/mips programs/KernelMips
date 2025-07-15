@@ -1,0 +1,882 @@
+macro: gpr(30) = enc(10240, uint)
+macro: gpr(28) = enc(5120, uint)
+addiu 29 28 620
+subu 1 29 28
+srl 1 1 2
+macro: zero(28, 1)
+macro: gpr(28) = enc(5120, uint)
+j _main
+
+_main:
+addi 1 28 568
+macro: gpr(2) = enc(2, uint)
+sw 2 1 0
+addi 1 28 576
+macro: gpr(2) = enc(2, uint)
+sw 2 1 0
+addi 1 28 584
+macro: gpr(2) = enc(1024, uint)
+sw 2 1 0
+addi 1 28 600
+macro: gpr(2) = enc(1048576, uint)
+sw 2 1 0
+addi 1 28 580
+macro: gpr(2) = enc(2, uint)
+sw 2 1 0
+addi 1 28 604
+macro: gpr(2) = enc(268435456, uint)
+sw 2 1 0
+addi 1 28 572
+addi 2 28 568
+lw 2 2 0
+addi 3 28 580
+lw 3 3 0
+macro: mul(2, 2, 3)
+sw 2 1 0
+addi 1 28 592
+macro: gpr(2) = enc(44, uint)
+addi 3 28 584
+lw 3 3 0
+macro: mul(2, 2, 3)
+sw 2 1 0
+addi 1 28 588
+macro: gpr(2) = enc(56, uint)
+addi 3 28 584
+lw 3 3 0
+macro: mul(2, 2, 3)
+sw 2 1 0
+addi 1 28 596
+addi 2 28 604
+lw 2 2 0
+addi 3 28 568
+lw 3 3 0
+addi 4 28 600
+lw 4 4 0
+macro: mul(3, 3, 4)
+subu 2 2 3
+sw 2 1 0
+addi 1 29 -4
+macro: gpr(2) = enc(1, uint)
+sw 2 1 0
+addi 1 29 -4
+lw 1 1 0
+addi 2 28 568
+lw 2 2 0
+macro: gpr(3) = enc(1, uint)
+addu 2 2 3
+sltu 1 1 2
+beq 1 0 43
+addi 2 28 504
+addi 3 29 -4
+lw 3 3 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+addi 3 29 -4
+lw 3 3 0
+macro: gpr(5) = enc(1, uint)
+subu 3 3 5
+addi 5 28 580
+lw 5 5 0
+macro: mul(3, 3, 5)
+sw 3 2 0
+addi 1 29 -4
+addi 2 29 -4
+lw 2 2 0
+macro: gpr(3) = enc(1, uint)
+addu 2 2 3
+sw 2 1 0
+blez 0 -50
+addi 1 29 -4
+macro: gpr(2) = enc(1, uint)
+sw 2 1 0
+addi 1 29 -4
+lw 1 1 0
+addi 2 28 568
+lw 2 2 0
+macro: gpr(3) = enc(1, uint)
+addu 2 2 3
+sltu 1 1 2
+beq 1 0 179
+addi 2 28 8
+addi 3 29 -4
+lw 3 3 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+addi 2 2 128
+macro: gpr(3) = enc(1, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+macro: gpr(3) = enc(4294967295, uint)
+sw 3 2 0
+addi 1 28 8
+addi 2 29 -4
+lw 2 2 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 128
+macro: gpr(2) = enc(3, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+macro: gpr(2) = enc(0, uint)
+sw 2 1 0
+addi 1 28 488
+addi 2 28 504
+addi 3 29 -4
+lw 3 3 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+lw 2 2 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+addi 2 28 8
+addi 3 29 -4
+lw 3 3 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+addi 2 2 128
+macro: gpr(3) = enc(5, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+sw 1 2 0
+addi 1 28 8
+addi 2 29 -4
+lw 2 2 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 128
+macro: gpr(2) = enc(6, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 2 28 580
+lw 2 2 0
+sw 2 1 0
+addi 1 29 -4
+addi 2 29 -4
+lw 2 2 0
+macro: gpr(3) = enc(1, uint)
+addu 2 2 3
+sw 2 1 0
+blez 0 -186
+addi 1 28 8
+macro: gpr(2) = enc(0, int)
+macro: gpr(23) = enc(160, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+macro: gpr(2) = enc(0, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+sw 1 0 4096
+macro: gpr(1) = enc(true, bool)
+beq 1 0 18
+addi 2 29 0
+addi 2 2 -9216
+blez 2 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 4
+jal _scheduler
+addi 1 29 0
+addi 1 1 -9216
+blez 1 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 4
+jal _runvm
+blez 0 -19
+macro: gpr(1) = enc(1, int)
+sysc
+
+_scheduler:
+sw 31 29 -4
+addi 2 28 0
+lw 2 2 0
+addi 3 28 568
+lw 3 3 0
+bne 2 3 3
+addi 2 0 1
+blez 0 2
+add 2 0 0
+beq 2 0 6
+addi 3 28 0
+macro: gpr(4) = enc(1, uint)
+sw 4 3 0
+blez 0 8
+addi 1 28 0
+addi 2 28 0
+lw 2 2 0
+macro: gpr(3) = enc(1, uint)
+addu 2 2 3
+sw 2 1 0
+lw 1 29 -4
+addi 29 29 -4
+jr 1
+
+_ipfHandler:
+sw 31 29 -4
+addi 2 28 540
+lw 2 2 0
+addi 2 2 -1
+slti 2 2 0
+beq 2 0 16
+addi 3 29 12
+addi 3 3 -9216
+blez 3 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 16
+addi 3 29 -12
+addi 4 0 3
+macro: zero(3, 4)
+jal _swapIn
+blez 0 29
+addi 1 29 12
+addi 1 1 -9216
+blez 1 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 16
+addi 1 29 -12
+addi 2 0 3
+macro: zero(1, 2)
+jal _swapOut
+addi 1 29 12
+addi 1 1 -9216
+blez 1 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 16
+addi 1 29 -12
+addi 2 0 3
+macro: zero(1, 2)
+jal _swapIn
+addi 1 28 544
+addi 2 28 544
+lw 2 2 0
+macro: gpr(3) = enc(1, uint)
+addu 2 2 3
+sw 2 1 0
+addi 1 28 544
+lw 1 1 0
+addi 2 28 576
+lw 2 2 0
+bne 1 2 3
+addi 1 0 1
+blez 0 2
+add 1 0 0
+beq 1 0 9
+addi 2 28 544
+macro: gpr(3) = enc(0, uint)
+sw 3 2 0
+addi 1 28 540
+macro: gpr(2) = enc(true, bool)
+sw 2 1 0
+lw 1 29 -4
+addi 29 29 -4
+jr 1
+
+_swapIn:
+sw 31 29 -16
+addi 3 29 -12
+addi 4 28 592
+lw 4 4 0
+macro: gpr(5) = enc(4096, uint)
+macro: divu(6, 4, 5)
+addi 4 28 544
+lw 4 4 0
+addu 6 6 4
+sw 6 3 0
+addi 1 29 -8
+addi 2 28 596
+lw 2 2 0
+addi 3 28 0
+lw 3 3 0
+addi 4 28 600
+lw 4 4 0
+macro: mul(3, 3, 4)
+addu 2 2 3
+addi 3 28 532
+lw 3 3 0
+addu 2 2 3
+sw 2 1 0
+addi 1 29 -4
+addi 2 28 504
+addi 3 28 0
+lw 3 3 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+lw 2 2 0
+addi 3 28 532
+lw 3 3 0
+addu 2 2 3
+sw 2 1 0
+addi 1 29 -12
+lw 1 1 0
+addi 2 29 -8
+lw 2 2 0
+addi 3 29 12
+addi 3 3 -9216
+blez 3 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 16
+sw 1 29 -12
+sw 2 29 -8
+addi 1 29 -4
+addi 2 0 1
+macro: zero(1, 2)
+jal _readdisk
+addi 1 28 488
+addi 2 29 -4
+lw 2 2 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 2 29 -12
+lw 2 2 0
+macro: gpr(3) = enc(4096, uint)
+macro: mul(2, 2, 3)
+macro: gpr(3) = enc(2048, uint)
+addu 2 2 3
+sw 2 1 0
+addi 1 28 548
+addi 2 28 544
+lw 2 2 0
+macro: gpr(23) = enc(8, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+addi 2 28 0
+lw 2 2 0
+sw 2 1 0
+addi 1 28 548
+addi 2 28 544
+lw 2 2 0
+macro: gpr(23) = enc(8, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 4
+addi 2 28 532
+lw 2 2 0
+sw 2 1 0
+lw 1 29 -16
+addi 29 29 -16
+jr 1
+
+_readdisk:
+sw 31 29 -16
+addi 1 29 -8
+lw 1 1 0
+addi 2 28 588
+lw 2 2 0
+macro: gpr(3) = enc(4096, uint)
+addu 2 2 3
+addi 3 29 8
+addi 3 3 -9216
+blez 3 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 12
+sw 1 29 -8
+sw 2 29 -4
+jal _writems
+macro: gpr(1) = enc(1, uint)
+addi 2 28 588
+lw 2 2 0
+macro: gpr(3) = enc(4096, uint)
+addu 2 2 3
+macro: gpr(3) = enc(4, uint)
+addu 2 2 3
+addi 3 29 8
+addi 3 3 -9216
+blez 3 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 12
+sw 1 29 -8
+sw 2 29 -4
+jal _writems
+addi 1 29 -4
+macro: gpr(2) = enc(1, int)
+sw 2 1 0
+addi 1 29 -4
+lw 1 1 0
+macro: gpr(2) = enc(0, int)
+beq 1 2 3
+addi 1 0 1
+blez 0 2
+add 1 0 0
+beq 1 0 27
+addi 2 29 -4
+addi 3 28 588
+lw 3 3 0
+macro: gpr(4) = enc(4096, uint)
+addu 3 3 4
+macro: gpr(4) = enc(4, uint)
+addu 3 3 4
+addi 4 29 8
+addi 4 4 -9216
+blez 4 4
+macro: gpr(1) = enc(41, int)
+sysc
+addi 29 29 16
+sw 2 29 -12
+sw 3 29 -8
+addi 2 29 -4
+addi 3 0 1
+macro: zero(2, 3)
+jal _readms
+blez 0 -34
+addi 1 28 588
+lw 1 1 0
+addi 2 29 -12
+lw 2 2 0
+macro: gpr(3) = enc(4096, uint)
+macro: mul(2, 2, 3)
+addi 3 28 584
+lw 3 3 0
+addi 5 29 12
+addi 5 5 -9216
+blez 5 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 16
+sw 1 29 -12
+sw 2 29 -8
+sw 3 29 -4
+jal _copyms
+lw 1 29 -16
+addi 29 29 -16
+jr 1
+
+_swapOut:
+sw 31 29 -16
+addi 1 29 -12
+addi 2 28 592
+lw 2 2 0
+macro: gpr(3) = enc(4096, uint)
+macro: divu(4, 2, 3)
+addi 2 28 544
+lw 2 2 0
+addu 4 4 2
+sw 4 1 0
+addi 1 29 -8
+addi 2 28 596
+lw 2 2 0
+addi 3 28 548
+addi 4 28 544
+lw 4 4 0
+macro: gpr(23) = enc(8, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+addi 3 3 0
+lw 3 3 0
+addi 4 28 600
+lw 4 4 0
+macro: mul(3, 3, 4)
+addu 2 2 3
+addi 3 28 548
+addi 6 28 544
+lw 6 6 0
+macro: gpr(23) = enc(8, uint)
+macro: mul(6, 6, 23)
+add 3 3 6
+addi 3 3 4
+lw 3 3 0
+addu 2 2 3
+sw 2 1 0
+addi 1 29 -4
+addi 2 28 504
+addi 3 28 548
+addi 4 28 544
+lw 4 4 0
+macro: gpr(23) = enc(8, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+addi 3 3 0
+lw 3 3 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+lw 2 2 0
+addi 3 28 548
+addi 4 28 544
+lw 4 4 0
+macro: gpr(23) = enc(8, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+addi 3 3 4
+lw 3 3 0
+addu 2 2 3
+sw 2 1 0
+addi 1 29 -8
+lw 1 1 0
+addi 2 29 -12
+lw 2 2 0
+addi 3 29 12
+addi 3 3 -9216
+blez 3 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 16
+sw 1 29 -12
+sw 2 29 -8
+addi 1 29 -4
+addi 2 0 1
+macro: zero(1, 2)
+jal _writedisk
+addi 1 28 488
+addi 2 29 -4
+lw 2 2 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 2 28 488
+addi 3 29 -4
+lw 3 3 0
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+lw 2 2 0
+macro: gpr(3) = enc(2048, uint)
+subu 2 2 3
+sw 2 1 0
+lw 1 29 -16
+addi 29 29 -16
+jr 1
+
+_writedisk:
+sw 31 29 -16
+addi 1 29 -8
+lw 1 1 0
+macro: gpr(2) = enc(4096, uint)
+macro: mul(1, 1, 2)
+addi 2 28 588
+lw 2 2 0
+addi 4 28 584
+lw 4 4 0
+addi 5 29 12
+addi 5 5 -9216
+blez 5 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 16
+sw 1 29 -12
+sw 2 29 -8
+sw 4 29 -4
+jal _copyms
+addi 1 29 -12
+lw 1 1 0
+addi 2 28 588
+lw 2 2 0
+macro: gpr(3) = enc(4096, uint)
+addu 2 2 3
+addi 3 29 8
+addi 3 3 -9216
+blez 3 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 12
+sw 1 29 -8
+sw 2 29 -4
+jal _writems
+macro: gpr(1) = enc(2, uint)
+addi 2 28 588
+lw 2 2 0
+macro: gpr(3) = enc(4096, uint)
+addu 2 2 3
+macro: gpr(3) = enc(4, uint)
+addu 2 2 3
+addi 3 29 8
+addi 3 3 -9216
+blez 3 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 12
+sw 1 29 -8
+sw 2 29 -4
+jal _writems
+addi 1 29 -4
+macro: gpr(2) = enc(2, int)
+sw 2 1 0
+addi 1 29 -4
+lw 1 1 0
+macro: gpr(2) = enc(0, int)
+beq 1 2 3
+addi 1 0 1
+blez 0 2
+add 1 0 0
+beq 1 0 27
+addi 2 29 -4
+addi 3 28 588
+lw 3 3 0
+macro: gpr(4) = enc(4096, uint)
+addu 3 3 4
+macro: gpr(4) = enc(4, uint)
+addu 3 3 4
+addi 4 29 8
+addi 4 4 -9216
+blez 4 4
+macro: gpr(1) = enc(41, int)
+sysc
+addi 29 29 16
+sw 2 29 -12
+sw 3 29 -8
+addi 2 29 -4
+addi 3 0 1
+macro: zero(2, 3)
+jal _readms
+blez 0 -34
+lw 1 29 -16
+addi 29 29 -16
+jr 1
+
+_readms:
+sw 31 29 -16
+addi 2 29 -8
+lw 2 2 0
+addi 1 2 0
+lw 2 1 0
+sw 2 29 -4
+addi 1 29 -4
+lw 1 1 0
+lw 2 29 -12
+sw 1 2 0
+lw 1 29 -16
+addi 29 29 -16
+jr 1
+
+_copyms:
+sw 31 29 -16
+addi 1 29 -12
+lw 1 1 0
+addi 1 1 0
+addi 2 29 -8
+lw 2 2 0
+addi 2 2 0
+addi 3 29 -4
+lw 3 3 0
+addi 3 3 0
+blez 3 7
+lw 4 1 0
+sw 4 2 0
+addi 1 1 4
+addi 2 2 4
+addi 3 3 -1
+blez 0 -6
+lw 1 29 -16
+addi 29 29 -16
+jr 1
+
+_writems:
+sw 31 29 -12
+addi 1 29 -8
+lw 1 1 0
+addi 1 1 0
+addi 2 29 -4
+lw 2 2 0
+addi 2 2 0
+sw 1 2 0
+lw 1 29 -12
+addi 29 29 -12
+jr 1
+
+_runvm:
+sw 31 29 -4
+addi 1 28 8
+addi 2 28 0
+lw 2 2 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+macro: gpr(2) = enc(0, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+macro: restore-user
+macro: save-user
+addi 1 28 520
+macro: gpr(2) = enc(0, uint)
+sw 2 1 0
+addi 1 28 516
+macro: gpr(2) = enc(1, uint)
+sw 2 1 0
+addi 1 28 524
+macro: gpr(2) = enc(0, uint)
+sw 2 1 0
+addi 1 28 524
+lw 1 1 0
+macro: gpr(2) = enc(0, uint)
+bne 1 2 3
+addi 1 0 1
+blez 0 2
+add 1 0 0
+beq 1 0 65
+addi 2 28 520
+addi 3 28 520
+lw 3 3 0
+macro: gpr(4) = enc(1, uint)
+addu 3 3 4
+sw 3 2 0
+addi 1 28 516
+macro: gpr(2) = enc(2, uint)
+addi 3 28 516
+lw 3 3 0
+macro: mul(2, 2, 3)
+sw 2 1 0
+addi 1 28 516
+lw 1 1 0
+addi 1 1 0
+addi 2 28 8
+addi 3 28 0
+lw 3 3 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+addi 2 2 128
+macro: gpr(3) = enc(2, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(3, 3, 23)
+add 2 2 3
+lw 2 2 0
+addi 2 2 0
+and 3 1 2
+addi 1 28 524
+sw 3 1 0
+blez 0 -72
+addi 1 28 528
+macro: gpr(2) = enc(0, uint)
+sw 2 1 0
+addi 1 28 520
+lw 1 1 0
+macro: gpr(2) = enc(17, uint)
+bne 1 2 3
+addi 1 0 1
+blez 0 2
+add 1 0 0
+beq 1 0 36
+addi 2 28 528
+addi 3 28 8
+addi 4 28 0
+lw 4 4 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+addi 3 3 128
+macro: gpr(4) = enc(3, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+lw 3 3 0
+sw 3 2 0
+addi 1 28 520
+lw 1 1 0
+macro: gpr(2) = enc(20, uint)
+bne 1 2 3
+addi 1 0 1
+blez 0 2
+add 1 0 0
+beq 1 0 36
+addi 2 28 528
+addi 3 28 8
+addi 4 28 0
+lw 4 4 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+addi 3 3 128
+macro: gpr(4) = enc(4, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+lw 3 3 0
+sw 3 2 0
+addi 1 28 528
+lw 1 1 0
+addi 1 1 0
+srl 1 1 12
+addi 2 28 532
+sw 1 2 0
+addi 1 28 536
+addi 2 28 532
+lw 2 2 0
+addi 3 28 8
+addi 4 28 0
+lw 4 4 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+addi 3 3 128
+macro: gpr(4) = enc(6, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(4, 4, 23)
+add 3 3 4
+lw 3 3 0
+sltu 2 2 3
+xori 2 2 1
+sw 2 1 0
+addi 1 28 4
+addi 2 28 520
+lw 2 2 0
+macro: gpr(3) = enc(17, uint)
+bne 2 3 3
+addi 2 0 1
+blez 0 2
+add 2 0 0
+addi 3 28 520
+lw 3 3 0
+macro: gpr(4) = enc(20, uint)
+bne 3 4 3
+addi 3 0 1
+blez 0 2
+add 3 0 0
+or 2 2 3
+addi 3 28 536
+lw 3 3 0
+addi 3 3 -1
+slti 3 3 0
+and 2 2 3
+sw 2 1 0
+addi 1 28 4
+lw 1 1 0
+beq 1 0 88
+addi 2 29 0
+addi 2 2 -9216
+blez 2 4
+macro: gpr(1) = enc(41, uint)
+sysc
+addi 29 29 4
+jal _ipfHandler
+addi 1 28 8
+addi 2 28 0
+lw 2 2 0
+macro: gpr(23) = enc(160, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+macro: gpr(2) = enc(0, int)
+macro: gpr(23) = enc(4, uint)
+macro: mul(2, 2, 23)
+add 1 1 2
+addi 1 1 0
+macro: restore-user
+lw 1 29 -4
+addi 29 29 -4
+jr 1
